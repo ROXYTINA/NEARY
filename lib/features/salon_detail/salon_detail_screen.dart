@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:salon_beauty_app/app_data/api_service.dart';
+import 'package:salon_beauty_app/app_model/salon.dart';
+import 'package:salon_beauty_app/app_model/service.dart';
+import 'package:salon_beauty_app/app_model/stylist.dart';
+import 'package:salon_beauty_app/app_state/api_settings.dart';
 
 import '../../app_data/mock_repository.dart';
 import '../../app_state/notifiers.dart';
@@ -18,20 +23,55 @@ class SalonDetailScreen extends StatefulWidget {
 
 class _SalonDetailScreenState extends State<SalonDetailScreen> with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  Salon? _remoteSalon;
+  List<SalonService> _services = [];
+  List<Stylist> _stylists = [];
+  bool _isLoading = true;
 
   @override
   void initState() {
     _tabController = TabController(length: 4, vsync: this);
     super.initState();
+    _fetchDetails();
+  }
+
+  Future<void> _fetchDetails() async {
+    try {
+      final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+      final api = ApiService(baseUrl);
+
+      // Fetch Salon
+      final result = await api.getSalonDetails(widget.salonId);
+      
+      // Fetch Services
+      List<SalonService> services = await api.getServicesForSalon(widget.salonId);
+
+      // Fetch Stylists
+      List<Stylist> stylists = await api.getStylistsForSalon(widget.salonId);
+
+      if (mounted) {
+        setState(() {
+          _remoteSalon = result;
+          _services = services;
+          _stylists = stylists;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final salon = MockRepository.instance.getSalonById(widget.salonId);
-    final services = MockRepository.instance.getServicesForSalon(widget.salonId);
-    final stylists = MockRepository.instance.getStylesForSalon(widget.salonId);
-    final reviews = MockRepository.instance.getReviewsForSalon(widget.salonId);
-    final gallery = MockRepository.instance.getGalleryForSalon(widget.salonId);
+    final salon = _remoteSalon;
+
+    // Use fetched lists or empty
+    final services = _services;
+    final stylists = _stylists;
+    final repo = MockRepository.instance;
+    final reviews = repo.getReviewsForSalon(widget.salonId);
+    final gallery = repo.getGalleryForSalon(widget.salonId);
     final favorites = context.watch<FavoritesNotifier>();
     final booking = context.watch<BookingNotifier>();
     final selectedServiceIds = booking.draftServices.map((s) => s.id).toSet();
@@ -40,7 +80,11 @@ class _SalonDetailScreenState extends State<SalonDetailScreen> with SingleTicker
     if (salon == null) {
       return Scaffold(
         appBar: AppBar(title: const Text('Salon')),
-        body: const Center(child: Text('Salon not found')),
+        body: Center(
+          child: _isLoading 
+            ? const CircularProgressIndicator()
+            : const Text('Salon not found'),
+        ),
       );
     }
 

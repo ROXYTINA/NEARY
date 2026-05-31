@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../app_model/models.dart';
 import '../app_theme/app_colors.dart';
@@ -105,15 +106,39 @@ class SafeNetworkImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final value = imageUrl?.trim();
     if (value == null || value.isEmpty) {
-      return Container(width: width, height: height, color: backgroundColor, child: Icon(Icons.image, size: fallbackSize));
+      return Container(
+          width: width,
+          height: height,
+          color: backgroundColor,
+          child: Icon(Icons.image, size: fallbackSize));
     }
 
-    return Image.network(
-      value,
+    return CachedNetworkImage(
+      imageUrl: value,
       width: width,
       height: height,
       fit: fit,
-      errorBuilder: (_, __, ___) => Container(width: width, height: height, color: backgroundColor, child: Icon(Icons.broken_image, size: fallbackSize)),
+      placeholder: (context, url) => Container(
+        width: width,
+        height: height,
+        color: backgroundColor,
+        child: const Center(
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      ),
+      errorWidget: (context, url, error) {
+        debugPrint('Image Error ($url): $error');
+        return Container(
+          width: width,
+          height: height,
+          color: backgroundColor,
+          child: Icon(Icons.broken_image, size: fallbackSize),
+        );
+      },
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:salon_beauty_app/app_data/api_service.dart';
+import 'package:salon_beauty_app/app_state/api_settings.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'package:intl/intl.dart';
 
@@ -23,20 +25,75 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   int _currentStep = 0;
   late PageController _pageController;
 
+  Salon? _salon;
+  List<SalonService> _services = [];
+  List<Stylist> _stylists = [];
+  List<String> _availableSlots = [];
+  bool _isLoading = true;
+  String? _error;
+
   @override
   void initState() {
     _pageController = PageController();
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadData();
+    });
+  }
+
+  Future<void> _loadData() async {
+    final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+    final api = ApiService(baseUrl);
+
+    try {
+      // 1. Try Salon Details
+      Salon? salon = await api.getSalonDetails(widget.salonId);
+
+      if (salon == null) {
+        if (mounted) setState(() { _error = 'Salon not found on server'; _isLoading = false; });
+        return;
+      }
+
+      // 2. Try Services & Stylists
+      List<SalonService> services = await api.getServicesForSalon(widget.salonId);
+      List<Stylist> stylists = await api.getStylistsForSalon(widget.salonId);
+
+      if (mounted) {
+        setState(() {
+          _salon = salon;
+          _services = services;
+          _stylists = stylists;
+          _isLoading = false;
+        });
+        
+        // Init draft
+        final booking = context.read<BookingNotifier>();
+        booking.startBooking(salon);
+      }
+    } catch (e) {
+      if (mounted) setState(() { _error = 'Server connection error: $e'; _isLoading = false; });
+    }
+  }
+
+  Future<void> _loadSlots(DateTime date) async {
+    final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+    final api = ApiService(baseUrl);
+    
+    final slots = await api.getAvailableSlots(widget.salonId, date);
+    if (mounted) {
+      setState(() {
+        _availableSlots = slots;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final salon = MockRepository.instance.getSalonById(widget.salonId);
-    final services = MockRepository.instance.getServicesForSalon(widget.salonId);
-    final stylists = MockRepository.instance.getStylesForSalon(widget.salonId);
-    final booking = context.watch<BookingNotifier>();
+    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_error != null || _salon == null) return Scaffold(body: Center(child: Text(_error ?? 'Salon not found')));
 
-    if (salon == null) return Scaffold(body: const Center(child: Text('Salon not found')));
+    final salon = _salon!;
+    final booking = context.watch<BookingNotifier>();
 
     final steps = [
       'Services',
@@ -49,9 +106,16 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Book Appointment'),
-        leading: _currentStep > 0
-            ? IconButton(icon: const Icon(Icons.arrow_back), onPressed: _previousStep)
-            : null,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (_currentStep > 0) {
+              _previousStep();
+            } else {
+              context.pop();
+            }
+          },
+        ),
       ),
       body: Column(
         children: [
@@ -94,8 +158,8 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildServicesStep(services, booking),
-                _buildStylistStep(stylists, booking),
+                _buildServicesStep(_services, booking),
+                _buildStylistStep(_stylists, booking),
                 _buildDateTimeStep(booking),
                 _buildInfoStep(booking),
                 _buildConfirmStep(booking),
@@ -292,8 +356,8 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                   ...booking.draftServices.map((s) => Text('• ${s.name} (${s.durationLabel})')),
                   const SizedBox(height: 8),
                   Text('Stylist: ${booking.draftStylist?.name ?? 'Any'}'),
-                  Text('Date: ${DateFormat('MMM d, yyyy').format(booking.draftDate!)}'),
-                  Text('Time: ${booking.draftTimeSlot}'),
+                  Text('Date: ${booking.draftDate != null ? DateFormat('MMM d, yyyy').format(booking.draftDate!) : 'Not selected'}'),
+                  Text('Time: ${booking.draftTimeSlot ?? 'Not selected'}'),
                   Text('Name: ${booking.draftCustomerName}'),
                   Text('Phone: ${booking.draftCustomerPhone}'),
                   Divider(),
@@ -326,8 +390,35 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
 
   void _confirmBooking(BuildContext context) async {
     final booking = context.read<BookingNotifier>();
-    await booking.confirmBooking();
-    if (mounted) context.go('/booking-confirmation');
+    final apiSettings = context.read<ApiSettingsNotifier>();
+    
+    // Validation before confirming
+    if (booking.draftServices.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select at least one service')),
+      );
+      setState(() => _currentStep = 0);
+      _pageController.jumpToPage(0);
+      return;
+    }
+
+    if (booking.draftDate == null || booking.draftTimeSlot == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please select a date and time')),
+      );
+      setState(() => _currentStep = 2);
+      _pageController.jumpToPage(2);
+      return;
+    }
+
+    final result = await booking.confirmBooking(apiSettings.baseUrl);
+    if (result != null && mounted) {
+      context.go('/booking-confirmation');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to confirm booking. Please check your connection.')),
+      );
+    }
   }
 
   @override
