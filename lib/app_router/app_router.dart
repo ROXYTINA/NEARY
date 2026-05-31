@@ -19,7 +19,7 @@ import '../features/chat/chat_thread_screen.dart';
 import '../features/reviews/reviews_screen.dart';
 import '../features/gallery/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
-import '../widgets/main_shell.dart';
+import '../app_widget/main_shell.dart';
 
 class AppRouter {
   static GoRouter router(BuildContext context) {
