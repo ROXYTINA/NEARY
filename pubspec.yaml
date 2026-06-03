@@ -19,6 +19,9 @@ dependencies:
   # Local storage
   shared_preferences: ^2.2.3
 
+  # Networking
+  http: ^1.2.0
+
   # Maps
   flutter_map: ^6.1.0
   latlong2: ^0.9.1
@@ -53,6 +56,5 @@ flutter:
 
   assets:
     - assets/images/
-    - assets/icons/
     - assets/mock/
 

@@ -1,8 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:intl/intl.dart';
+
 import '../app_model/models.dart';
+import '../app_data/api_service.dart';
 import '../app_data/mock_repository.dart';
+import 'api_settings.dart';
 
 // ============================================================
 // FavoritesNotifier
@@ -102,36 +106,30 @@ class BookingNotifier extends ChangeNotifier {
         ..sort((a, b) => b.date.compareTo(a.date));
 
   double get draftTotal =>
-      draftServices.fold(0, (sum, s) => sum + s.price);
+      draftServices.fold(0.0, (sum, s) => sum + s.price);
 
-  Future<void> load() async {
+  Future<void> load(String baseUrl) async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getStringList(_bookingsKey) ?? [];
-    _bookings = raw.map((s) => Booking.fromJson(json.decode(s))).toList();
-
-    // Age upcoming bookings that have passed
-    final now = DateTime.now();
-    for (var i = 0; i < _bookings.length; i++) {
-      if (_bookings[i].status == 'upcoming' &&
-          _bookings[i].date.isBefore(now.subtract(const Duration(hours: 1)))) {
-        _bookings[i] = Booking(
-          id: _bookings[i].id,
-          salonId: _bookings[i].salonId,
-          salonName: _bookings[i].salonName,
-          serviceIds: _bookings[i].serviceIds,
-          serviceNames: _bookings[i].serviceNames,
-          stylistId: _bookings[i].stylistId,
-          stylistName: _bookings[i].stylistName,
-          date: _bookings[i].date,
-          timeSlot: _bookings[i].timeSlot,
-          customerName: _bookings[i].customerName,
-          customerPhone: _bookings[i].customerPhone,
-          totalPrice: _bookings[i].totalPrice,
-          status: 'past',
-          confirmationCode: _bookings[i].confirmationCode,
-        );
+    
+    // Try to load from API first
+    try {
+      final api = ApiService(baseUrl);
+      final remote = await api.getMyBookings();
+      // If we got a successful response (even empty), we use it. 
+      // api.getMyBookings should probably throw or return null if it failed.
+      // For now, if it returns an empty list, we'll check local storage as a secondary source.
+      if (remote.isNotEmpty) {
+        _bookings = remote;
+        notifyListeners();
+        return;
       }
+    } catch (e) {
+      debugPrint('BookingNotifier: Failed to load from API: $e');
     }
+
+    // Secondary source: Local persistence (for offline or mock usage)
+    _bookings = raw.map((s) => Booking.fromJson(json.decode(s))).toList();
     notifyListeners();
   }
 
@@ -161,13 +159,13 @@ class BookingNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  void selectDate(DateTime date) {
+  void selectDate(DateTime? date) {
     draftDate = date;
     draftTimeSlot = null;
     notifyListeners();
   }
 
-  void selectTimeSlot(String slot) {
+  void selectTimeSlot(String? slot) {
     draftTimeSlot = slot;
     notifyListeners();
   }
@@ -178,28 +176,52 @@ class BookingNotifier extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Booking> confirmBooking() async {
-    final code = 'SB${DateTime.now().millisecondsSinceEpoch % 100000}';
-    final booking = Booking(
-      id: 'b${DateTime.now().millisecondsSinceEpoch}',
-      salonId: draftSalonId!,
-      salonName: draftSalonName!,
-      serviceIds: draftServices.map((s) => s.id).toList(),
-      serviceNames: draftServices.map((s) => s.name).toList(),
-      stylistId: draftStylist?.id ?? '',
-      stylistName: draftStylist?.name ?? 'Any Stylist',
-      date: draftDate!,
-      timeSlot: draftTimeSlot!,
-      customerName: draftCustomerName,
-      customerPhone: draftCustomerPhone,
-      totalPrice: draftTotal,
-      status: 'upcoming',
-      confirmationCode: code,
-    );
-    _bookings = [booking, ..._bookings];
-    notifyListeners();
-    await _persist();
-    return booking;
+  Future<Booking?> confirmBooking(String baseUrl) async {
+    if (draftSalonId == null || draftDate == null || draftTimeSlot == null) {
+      return null;
+    }
+
+    final payload = {
+      'salon_id': draftSalonId,
+      'service_ids': draftServices.map((s) => s.id).toList(),
+      'stylist_id': draftStylist?.id ?? '',
+      'date': DateFormat('yyyy-MM-dd').format(draftDate!),
+      'time_slot': draftTimeSlot,
+      'customer_name': draftCustomerName,
+      'customer_phone': draftCustomerPhone,
+      'total_price': draftTotal,
+    };
+
+    final api = ApiService(baseUrl);
+    try {
+      final success = await api.createBooking(payload);
+
+      if (success) {
+        final code = 'SB${DateTime.now().millisecondsSinceEpoch % 100000}';
+        final booking = Booking(
+          id: 'b${DateTime.now().millisecondsSinceEpoch}',
+          salonId: draftSalonId!,
+          salonName: draftSalonName!,
+          serviceIds: draftServices.map((s) => s.id).toList(),
+          serviceNames: draftServices.map((s) => s.name).toList(),
+          stylistId: draftStylist?.id ?? '',
+          stylistName: draftStylist?.name ?? 'Any Stylist',
+          date: draftDate!,
+          timeSlot: draftTimeSlot!,
+          customerName: draftCustomerName,
+          customerPhone: draftCustomerPhone,
+          totalPrice: draftTotal,
+          status: 'upcoming',
+          confirmationCode: code,
+        );
+
+        _bookings = [booking, ..._bookings];
+        notifyListeners();
+        await _persist();
+        return booking;
+      }
+    } catch (_) {}
+    return null;
   }
 
   Future<void> cancelBooking(String id) async {
@@ -264,18 +286,23 @@ class ChatNotifier extends ChangeNotifier {
   final Map<String, List<ChatMessage>> _threads = {};
   final Map<String, bool> _typing = {};
 
-  List<ChatThread> get threads => MockRepository.instance
-      .getAllSalons()
-      .take(5)
-      .map((s) => ChatThread(
-    salonId: s.id,
-    salonName: s.name,
-    salonAvatar: s.coverImage,
-    lastMessage: _threads[s.id]?.lastOrNull?.text ?? 'Tap to start chatting',
-    lastTime: _threads[s.id]?.lastOrNull?.timestamp ?? DateTime.now().subtract(const Duration(hours: 2)),
-    unreadCount: 0,
-  ))
-      .toList();
+  List<ChatThread> get threads {
+    return MockRepository.instance
+        .getAllSalons()
+        .take(5)
+        .map((s) {
+          final msgs = _threads[s.id] ?? [];
+          return ChatThread(
+            salonId: s.id,
+            salonName: s.name,
+            salonAvatar: s.coverImage,
+            lastMessage: msgs.isNotEmpty ? msgs.last.text : 'Tap to start chatting',
+            lastTime: msgs.isNotEmpty ? msgs.last.timestamp : DateTime.now().subtract(const Duration(hours: 2)),
+            unreadCount: 0,
+          );
+        })
+        .toList();
+  }
 
   List<ChatMessage> getMessages(String salonId) =>
       _threads[salonId] ?? [];

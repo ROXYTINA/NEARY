@@ -6,8 +6,10 @@ import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
 import '../../app_data/mock_repository.dart';
+import '../../app_data/api_service.dart';
 import '../../app_model/models.dart';
 import '../../app_state/notifiers.dart';
+import '../../app_state/api_settings.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
 import '../../app_widget/common_widget.dart';
@@ -24,6 +26,10 @@ class _HomeScreenState extends State<HomeScreen> {
   String _searchQuery = '';
   String _selectedCategory = 'All';
   int _carouselIndex = 0;
+
+  List<Salon>? _remoteSalons;
+  bool _isLoading = false;
+  String? _apiError;
 
   final _categories = ['All', 'Hair', 'Nails', 'Makeup', 'Spa', 'Bridal'];
   final _repo = MockRepository.instance;
@@ -43,14 +49,59 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchRemoteSalons();
+    });
+  }
+
+  Future<void> _fetchRemoteSalons() async {
+    final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+    setState(() {
+      _isLoading = true;
+      _apiError = null;
+    });
+    final api = ApiService(baseUrl);
+    final results = await api.getSalons();
+    if (mounted) {
+      setState(() {
+        if (results.isNotEmpty) {
+          _remoteSalons = results;
+        } else {
+          _apiError = "No salons returned from API";
+        }
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final favs = context.watch<FavoritesNotifier>();
+    
+    // Logic: Use server data if available, otherwise show empty or error
+    final sourceSalons = _remoteSalons ?? [];
+    
+    // If we have no remote salons and no error yet, and we aren't loading, 
+    // we might want to show mocks ONLY if the server didn't respond at all.
+    // But per instructions "dont fallback pls", I will stick to remote or empty.
+    
     final salons = _searchQuery.isNotEmpty
-        ? _repo.searchSalons(_searchQuery)
-        : _repo.getSalonsByCategory(_selectedCategory);
+        ? sourceSalons.where((s) => s.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList()
+        : _selectedCategory == 'All' 
+            ? sourceSalons 
+            : sourceSalons.where((s) => s.categories.contains(_selectedCategory)).toList();
+            
     final promos = _repo.getAllPromotions().take(3).toList();
 
     return Scaffold(
+      floatingActionButton: _apiError != null ? FloatingActionButton.extended(
+        backgroundColor: Colors.amber,
+        onPressed: _fetchRemoteSalons,
+        label: const Text('API Error - Tap to Retry', style: TextStyle(color: Colors.black)),
+        icon: const Icon(Icons.refresh, color: Colors.black),
+      ) : null,
       body: CustomScrollView(
         slivers: [
           // App bar

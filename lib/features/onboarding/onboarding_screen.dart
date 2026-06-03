@@ -34,55 +34,69 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   Widget build(BuildContext context) {
     final onboarding = context.read<OnboardingNotifier>();
 
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                itemCount: _pages.length,
-                onPageChanged: (i) => setState(() => _page = i),
-                itemBuilder: (_, i) => Padding(
-                  padding: const EdgeInsets.all(32),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(_pages[i]['title']!, style: AppTextStyles.heroDisplay, textAlign: TextAlign.center),
-                      const SizedBox(height: 16),
-                      Text(_pages[i]['body']!, style: AppTextStyles.bodyMd, textAlign: TextAlign.center),
-                    ],
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        if (_page > 0) {
+          setState(() => _page--);
+        }
+      },
+      child: Scaffold(
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: PageView.builder(
+                  itemCount: _pages.length,
+                  onPageChanged: (i) => setState(() => _page = i),
+                  itemBuilder: (_, i) => Padding(
+                    padding: const EdgeInsets.all(32),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(_pages[i]['title']!,
+                            style: AppTextStyles.heroDisplay,
+                            textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
+                        Text(_pages[i]['body']!,
+                            style: AppTextStyles.bodyMd,
+                            textAlign: TextAlign.center),
+                      ],
+                    ),
                   ),
                 ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                children: [
-                  TextButton(
-                    onPressed: () async {
-                      await onboarding.complete();
-                      if (mounted) context.go('/home');
-                    },
-                    child: const Text('Skip'),
-                  ),
-                  const Spacer(),
-                  ElevatedButton(
-                    onPressed: () async {
-                      if (_page < _pages.length - 1) {
-                        setState(() => _page++);
-                        // animate page view if needed
-                      } else {
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    TextButton(
+                      onPressed: () async {
                         await onboarding.complete();
                         if (mounted) context.go('/home');
-                      }
-                    },
-                    child: Text(_page < _pages.length - 1 ? 'Next' : 'Get Started'),
-                  ),
-                ],
+                      },
+                      child: const Text('Skip'),
+                    ),
+                    const Spacer(),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_page < _pages.length - 1) {
+                          setState(() => _page++);
+                          // animate page view if needed
+                        } else {
+                          await onboarding.complete();
+                          if (mounted) context.go('/home');
+                        }
+                      },
+                      child: Text(
+                          _page < _pages.length - 1 ? 'Next' : 'Get Started'),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import 'app_data/mock_repository.dart';
 import 'app_state/notifiers.dart';
+import 'app_state/api_settings.dart';
 import 'app.dart';
 
 void main() async {
@@ -16,10 +17,11 @@ void main() async {
   final favorites = FavoritesNotifier();
   final booking = BookingNotifier();
   final chat = ChatNotifier();
+  final apiSettings = ApiSettingsNotifier();
 
   await onboarding.load();
   await favorites.load();
-  await booking.load();
+  await booking.load(apiSettings.baseUrl);
 
   runApp(
     MultiProvider(
@@ -28,6 +30,7 @@ void main() async {
         ChangeNotifierProvider.value(value: favorites),
         ChangeNotifierProvider.value(value: booking),
         ChangeNotifierProvider.value(value: chat),
+        ChangeNotifierProvider.value(value: apiSettings),
       ],
       child: const SalonBeautyApp(),
     ),
