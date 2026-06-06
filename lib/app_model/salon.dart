@@ -49,12 +49,14 @@ class Salon {
     tagline: j['tagline'] ?? '',
     address: j['address'] ?? '',
     city: j['city'] ?? '',
-    lat: (j['lat'] as num? ?? 0.0).toDouble(),
-    lng: (j['lng'] as num? ?? 0.0).toDouble(),
+    lat: (j['latitude'] as num? ?? 0.0).toDouble(),
+    lng: (j['longitude'] as num? ?? 0.0).toDouble(),
     rating: (j['rating'] as num? ?? 0.0).toDouble(),
     reviewCount: j['reviewCount'] ?? 0,
     coverImage: j['coverImage'] ?? '',
-    images: List<String>.from(j['images'] ?? []),
+    images: (j['images'] is List)
+        ? List<String>.from(j['images'])
+        : [],
     categories: List<String>.from(j['categories'] ?? []),
     openTime: j['openTime'] ?? '09:00',
     closeTime: j['closeTime'] ?? '20:00',

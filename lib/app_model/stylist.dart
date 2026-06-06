@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 class Stylist {
   final String id;
   final String salonId;
@@ -5,28 +7,33 @@ class Stylist {
   final String role;
   final double rating;
   final String avatar;
-  final List<String> specialties;
-  final int yearsExp;
+  final List<String> skills;
 
-  const Stylist({
+  Stylist({
     required this.id,
     required this.salonId,
     required this.name,
     required this.role,
     required this.rating,
     required this.avatar,
-    required this.specialties,
-    required this.yearsExp,
+    required this.skills,
   });
 
-  factory Stylist.fromJson(Map<String, dynamic> j) => Stylist(
-    id: j['id'],
-    salonId: j['salonId'],
-    name: j['name'],
-    role: j['role'],
-    rating: (j['rating'] as num).toDouble(),
-    avatar: j['avatar'],
-    specialties: List<String>.from(j['specialties'] ?? []),
-    yearsExp: j['yearsExp'] ?? 1,
-  );
+  factory Stylist.fromJson(Map<String, dynamic> json) {
+    final rawSkills = json['skills'];
+
+    return Stylist(
+      id: json['id'] ?? '',
+      salonId: json['salon_id'] ?? '',
+      name: json['name'] ?? '',
+      role: json['role'] ?? '',
+      rating: (json['rating'] ?? 0).toDouble(),
+      avatar: json['avatar'] ?? '',
+      skills: rawSkills == null
+          ? []
+          : rawSkills is String
+          ? List<String>.from(jsonDecode(rawSkills))
+          : List<String>.from(rawSkills),
+    );
+  }
 }

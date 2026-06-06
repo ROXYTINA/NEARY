@@ -19,6 +19,9 @@ void main() async {
   final chat = ChatNotifier();
   final apiSettings = ApiSettingsNotifier();
 
+  final theme = ThemeNotifier();
+  await theme.load();
+
   await onboarding.load();
   await favorites.load();
   await booking.load(apiSettings.baseUrl);
@@ -31,6 +34,8 @@ void main() async {
         ChangeNotifierProvider.value(value: booking),
         ChangeNotifierProvider.value(value: chat),
         ChangeNotifierProvider.value(value: apiSettings),
+        ChangeNotifierProvider(create: (_) => AuthNotifier()..load()),
+        ChangeNotifierProvider.value(value: theme),
       ],
       child: const SalonBeautyApp(),
     ),

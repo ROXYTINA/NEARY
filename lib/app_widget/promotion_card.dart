@@ -19,13 +19,16 @@ class PromotionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final cardColor = Theme.of(context).cardTheme.color ?? scheme.surface;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppColors.roseDark.withValues(alpha: 0.08),
+            color: scheme.shadow.withOpacity(0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -35,7 +38,7 @@ class PromotionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         child: Column(
           children: [
-            // Image + badge
+            // ── Image + badge ──────────────────────────────────
             Stack(
               children: [
                 CachedNetworkImage(
@@ -52,10 +55,10 @@ class PromotionCard extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                        colors: [
-                         Colors.transparent,
-                         Colors.black.withValues(alpha: 0.6),
-                       ],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.6),
+                      ],
                     ),
                   ),
                 ),
@@ -69,8 +72,8 @@ class PromotionCard extends StatelessWidget {
                       Expanded(
                         child: Text(
                           promo.title,
-                          style: AppTextStyles.displaySm
-                              .copyWith(color: Colors.white, fontSize: 17),
+                          style: AppTextStyles.displaySm.copyWith(
+                              color: Colors.white, fontSize: 17),
                         ),
                       ),
                       Container(
@@ -84,8 +87,8 @@ class PromotionCard extends StatelessWidget {
                           promo.discountPercent > 0
                               ? '${promo.discountPercent}% OFF'
                               : 'FREE',
-                          style: AppTextStyles.labelSm
-                              .copyWith(color: AppColors.charcoal),
+                          style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.charcoal),
                         ),
                       ),
                     ],
@@ -93,19 +96,23 @@ class PromotionCard extends StatelessWidget {
                 ),
               ],
             ),
-            // Body
+
+            // ── Body ───────────────────────────────────────────
             Container(
-              color: Theme.of(context).cardTheme.color,
+              color: cardColor,
               padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(promo.description,
-                      style: AppTextStyles.bodyMd, maxLines: 2),
+                      style: AppTextStyles.bodyMd.copyWith(
+                          color: scheme.onSurface),
+                      maxLines: 2),
                   const SizedBox(height: 10),
+
+                  // Code box + button
                   Row(
                     children: [
-                      // Code box
                       Expanded(
                         child: GestureDetector(
                           onTap: onCopy,
@@ -113,21 +120,23 @@ class PromotionCard extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 10),
                             decoration: BoxDecoration(
-                              color: AppColors.roseLight,
+                              color: scheme.primaryContainer,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                  color: AppColors.roseMid,
-                                  style: BorderStyle.solid),
+                                  color: scheme.primary.withOpacity(0.3)),
                             ),
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              mainAxisAlignment:
+                              MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(promo.code,
-                                    style: AppTextStyles.labelLg.copyWith(
-                                        color: AppColors.rosePrimary,
-                                        letterSpacing: 2)),
-                                const Icon(Icons.copy,
-                                    size: 16, color: AppColors.rosePrimary),
+                                Text(
+                                  promo.code,
+                                  style: AppTextStyles.labelLg.copyWith(
+                                      color: scheme.primary,
+                                      letterSpacing: 2),
+                                ),
+                                Icon(Icons.copy,
+                                    size: 16, color: scheme.primary),
                               ],
                             ),
                           ),
@@ -147,17 +156,21 @@ class PromotionCard extends StatelessWidget {
                     ],
                   ),
                   const SizedBox(height: 6),
+
+                  // Expiry + salon name
                   Row(
                     children: [
-                      const Icon(Icons.schedule,
-                          size: 12, color: AppColors.warmGrey),
+                      Icon(Icons.schedule,
+                          size: 12,
+                          color: scheme.onSurface.withOpacity(0.5)),
                       const SizedBox(width: 4),
                       Text('Expires ${promo.expiryDate}',
-                          style: AppTextStyles.caption),
+                          style: AppTextStyles.caption.copyWith(
+                              color: scheme.onSurface.withOpacity(0.5))),
                       const Spacer(),
                       Text(promo.salonName,
                           style: AppTextStyles.caption
-                              .copyWith(color: AppColors.rosePrimary)),
+                              .copyWith(color: scheme.primary)),
                     ],
                   ),
                 ],

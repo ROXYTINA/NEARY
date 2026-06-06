@@ -112,7 +112,11 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
             if (_currentStep > 0) {
               _previousStep();
             } else {
-              context.pop();
+              if (context.canPop()) {
+                context.pop();
+              } else {
+                context.go('/salon/${widget.salonId}');
+              }
             }
           },
         ),

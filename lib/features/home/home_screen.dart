@@ -28,6 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   int _carouselIndex = 0;
 
   List<Salon>? _remoteSalons;
+  List<Promotion> _promos = [];
   bool _isLoading = false;
   String? _apiError;
 
@@ -35,17 +36,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final _repo = MockRepository.instance;
 
   final _bannerImages = [
-    'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=900',
-    'https://images.unsplash.com/photo-1519741347686-c1e0aadf4611?w=900',
-    'https://images.unsplash.com/photo-1600334129128-685c5582fd35?w=900',
-    'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=900',
+    'https://i.pinimg.com/736x/30/28/c8/3028c897d22592831a12a2647aa6537d.jpg',
+    'https://i.pinimg.com/1200x/ba/27/cf/ba27cfbb96554c85e7f8535e4641b042.jpg',
+    'https://i.pinimg.com/736x/c6/82/30/c68230227a85566457d6d43b1d8ca148.jpg',
+    'https://i.pinimg.com/736x/51/cb/9e/51cb9e1831e9469e63cb1ee9f1aa1094.jpg',
   ];
 
   final _bannerTitles = [
-    'Your Beauty Journey\nStarts Here',
-    'Find Your Perfect\nBridal Look',
-    'Relax & Rejuvenate\nWith Our Spas',
+    'Jg Sart Men?? \n MOS!',
+    'TOS tv SPA',
     'Makeup Artistry\nAt Its Finest',
+    'Relax & Rejuvenate\nWith Our Spas',
   ];
 
   @override
@@ -53,7 +54,14 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _fetchRemoteSalons();
+      _fetchPromos();
     });
+  }
+
+  Future<void> _fetchPromos() async {
+    final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+    final results = await ApiService(baseUrl).getPromotions();
+    if (mounted) setState(() => _promos = results);
   }
 
   Future<void> _fetchRemoteSalons() async {
@@ -92,8 +100,8 @@ class _HomeScreenState extends State<HomeScreen> {
         : _selectedCategory == 'All' 
             ? sourceSalons 
             : sourceSalons.where((s) => s.categories.contains(_selectedCategory)).toList();
-            
-    final promos = _repo.getAllPromotions().take(3).toList();
+
+    final promos = _promos.take(3).toList();
 
     return Scaffold(
       floatingActionButton: _apiError != null ? FloatingActionButton.extended(
@@ -111,10 +119,9 @@ class _HomeScreenState extends State<HomeScreen> {
             snap: true,
             title: Row(
               children: [
-                Text('Salon',
-                    style: AppTextStyles.displaySm
-                        .copyWith(color: AppColors.rosePrimary)),
-                Text(' & Beauty', style: AppTextStyles.displaySm),
+                Text('Neary',
+                    style: AppTextStyles.displaySm.copyWith(
+                        color: Theme.of(context).colorScheme.onSurface)),
               ],
             ),
             actions: [

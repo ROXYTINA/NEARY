@@ -9,26 +9,34 @@ class ApiService {
 
   Future<List<Salon>> getSalons() async {
     try {
+
       final response = await http.get(Uri.parse('$baseUrl/api/salons/'));
+
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.map((j) => Salon.fromJson(j)).toList();
       }
+
     } catch (e) {
       print('API Error (Salons): $e');
+
     }
     return [];
   }
 
   Future<Salon?> getSalonDetails(String id) async {
+
     try {
+
       final response = await http.get(Uri.parse('$baseUrl/api/salons/$id'));
       if (response.statusCode == 200) {
         return Salon.fromJson(json.decode(response.body));
       }
+
     } catch (e) {
       print('API Error (Salon Details): $e');
     }
+
     return null;
   }
 
@@ -44,6 +52,20 @@ class ApiService {
     }
     return [];
   }
+
+  Future<List<Review>> getReviewsForSalon(String id) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/salons/$id/reviews'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((j) => Review.fromJson(j)).toList();
+      }
+    } catch (e) {
+      print('API Error (Reviews for Salon): $e');
+    }
+    return [];
+  }
+
 
   Future<List<Stylist>> getStylistsForSalon(String id) async {
     try {
@@ -97,4 +119,19 @@ class ApiService {
       return false;
     }
   }
+
+  Future<List<Promotion>> getPromotions() async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/promotions/'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((j) => Promotion.fromJson(j)).toList();
+      }
+    } catch (e) {
+      print('API Error (Promotions): $e');
+    }
+    return [];
+  }
+
+
 }

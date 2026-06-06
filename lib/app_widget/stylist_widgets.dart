@@ -10,135 +10,109 @@ class StylistCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onTap;
 
-  const StylistCard({super.key, required this.stylist, this.isSelected = false, this.onTap});
+  const StylistCard({
+    super.key,
+    required this.stylist,
+    this.isSelected = false,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final avatar = (stylist.avatar).trim();
+
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.roseLight : Theme.of(context).cardTheme.color,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: isSelected ? AppColors.rosePrimary : AppColors.divider, width: 1),
-        ),
         padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.roseLight
+              : Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected
+                ? AppColors.rosePrimary
+                : AppColors.divider,
+            width: 1,
+          ),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            NetworkAvatar(
-              imageUrl: stylist.avatar,
+            CircleAvatar(
               radius: 34,
-              icon: Icons.person,
+              backgroundColor: AppColors.roseLight,
+              backgroundImage:
+              avatar.isNotEmpty ? NetworkImage(avatar) : null,
+              child: avatar.isEmpty
+                  ? const Icon(Icons.person,
+                  color: AppColors.warmGrey)
+                  : null,
             ),
+
             const SizedBox(height: 8),
-            Text(stylist.name, style: AppTextStyles.labelLg, textAlign: TextAlign.center),
+
+            Text(
+              stylist.name,
+              style: AppTextStyles.labelLg,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+
             const SizedBox(height: 4),
-            Text(stylist.role, style: AppTextStyles.caption.copyWith(color: AppColors.warmGrey)),
+
+            Text(
+              stylist.role,
+              style: AppTextStyles.caption
+                  .copyWith(color: AppColors.warmGrey),
+              maxLines: 1,
+            ),
+
             const SizedBox(height: 6),
+
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                const Icon(Icons.star, size: 14, color: AppColors.goldMid),
+                const Icon(Icons.star,
+                    size: 14, color: AppColors.goldMid),
                 const SizedBox(width: 4),
-                Text(stylist.rating.toStringAsFixed(1), style: AppTextStyles.labelSm),
+                Text(
+                  stylist.rating.toStringAsFixed(1),
+                  style: AppTextStyles.labelSm,
+                ),
               ],
             ),
+
+            const SizedBox(height: 6),
+
+            // SKILLS FIX
+            if (stylist.skills.isNotEmpty)
+              Wrap(
+                spacing: 4,
+                runSpacing: 4,
+                alignment: WrapAlignment.center,
+                children: stylist.skills.take(2).map((s) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 6, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.roseLight,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      s,
+                      style: const TextStyle(fontSize: 10),
+                    ),
+                  );
+                }).toList(),
+              ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class NetworkAvatar extends StatelessWidget {
-  final String imageUrl;
-  final double radius;
-  final IconData icon;
-
-  const NetworkAvatar({
-    super.key,
-    required this.imageUrl,
-    required this.radius,
-    this.icon = Icons.person,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return CircleAvatar(
-      radius: radius,
-      backgroundColor: AppColors.roseLight,
-      child: ClipOval(
-        child: SizedBox(
-          width: radius * 2,
-          height: radius * 2,
-          child: SafeNetworkImage(
-            imageUrl: imageUrl,
-            fit: BoxFit.cover,
-            fallbackSize: radius * 2,
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class SafeNetworkImage extends StatelessWidget {
-  final String? imageUrl;
-  final double? width;
-  final double? height;
-  final BoxFit fit;
-  final double? fallbackSize;
-  final Color backgroundColor;
-
-  const SafeNetworkImage({
-    super.key,
-    required this.imageUrl,
-    this.width,
-    this.height,
-    this.fit = BoxFit.cover,
-    this.fallbackSize,
-    this.backgroundColor = AppColors.roseLight,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final value = imageUrl?.trim();
-    if (value == null || value.isEmpty) {
-      return Container(
-          width: width,
-          height: height,
-          color: backgroundColor,
-          child: Icon(Icons.image, size: fallbackSize));
-    }
-
-    return CachedNetworkImage(
-      imageUrl: value,
-      width: width,
-      height: height,
-      fit: fit,
-      placeholder: (context, url) => Container(
-        width: width,
-        height: height,
-        color: backgroundColor,
-        child: const Center(
-          child: SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
-          ),
-        ),
-      ),
-      errorWidget: (context, url, error) {
-        debugPrint('Image Error ($url): $error');
-        return Container(
-          width: width,
-          height: height,
-          color: backgroundColor,
-          child: Icon(Icons.broken_image, size: fallbackSize),
-        );
-      },
     );
   }
 }
