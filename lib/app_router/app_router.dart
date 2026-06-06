@@ -20,14 +20,18 @@ import '../features/reviews/reviews_screen.dart';
 import '../features/gallery/gallery_screen.dart';
 import '../features/settings/settings_screen.dart';
 import '../app_widget/main_shell.dart';
+import '../features/auth/auth_screen.dart';
+import '../features/splash/splash_screen.dart';
 
 class AppRouter {
   static GoRouter router(BuildContext context) {
-    final onboarding = context.read<OnboardingNotifier>();
-
     return GoRouter(
-      initialLocation: onboarding.isDone ? '/home' : '/onboarding',
+      initialLocation: '/splash',
       routes: [
+        GoRoute(
+          path: '/splash',
+          builder: (_, __) => const SplashScreen(),
+        ),
         GoRoute(
           path: '/onboarding',
           builder: (_, __) => const OnboardingScreen(),
@@ -67,6 +71,12 @@ class AppRouter {
               path: '/settings',
               builder: (_, __) => const SettingsScreen(),
             ),
+            GoRoute(
+              path: '/auth',
+              builder: (_, state) => AuthScreen(
+                redirectTo: state.uri.queryParameters['redirect'],
+              ),
+            ),
           ],
         ),
         GoRoute(
@@ -81,15 +91,23 @@ class AppRouter {
             serviceId: state.pathParameters['id']!,
           ),
         ),
+
+        // ── Auth-guarded booking route (single, no duplicate) ──
         GoRoute(
           path: '/booking/:salonId',
-          builder: (_, state) => BookingFlowScreen(
-            salonId: state.pathParameters['salonId']!,
-          ),
+          builder: (context, state) {
+            final auth = context.read<AuthNotifier>();
+            final salonId = state.pathParameters['salonId']!;
+            if (!auth.isLoggedIn) {
+              return AuthScreen(redirectTo: '/booking/$salonId');
+            }
+            return BookingFlowScreen(salonId: salonId);
+          },
         ),
+
         GoRoute(
           path: '/booking-confirmation',
-          builder: (_, state) => const BookingConfirmationScreen(),
+          builder: (_, __) => const BookingConfirmationScreen(),
         ),
         GoRoute(
           path: '/chat/:salonId',

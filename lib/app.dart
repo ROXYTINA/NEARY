@@ -9,16 +9,15 @@ class SalonBeautyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final onboarding = context.watch<OnboardingNotifier>();
-
+    final themeNotifier = context.watch<ThemeNotifier>();
     final router = AppRouter.router(context);
 
     return MaterialApp.router(
-      title: 'Salon & Beauty',
+      title: 'Neary',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: themeNotifier.mode,   // ← driven by notifier now
       routerConfig: router,
     );
   }

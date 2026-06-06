@@ -45,6 +45,7 @@ class SalonCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+
             // Hero image
             Stack(
               children: [
@@ -62,6 +63,7 @@ class SalonCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 // Open/closed badge
                 Positioned(
                   top: 10,
@@ -83,6 +85,7 @@ class SalonCard extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 // Fav button
                 Positioned(
                   top: 8,
@@ -105,6 +108,7 @@ class SalonCard extends StatelessWidget {
                           ),
                         ],
                       ),
+
                       child: Icon(
                         isFav ? Icons.favorite : Icons.favorite_border,
                         size: 18,
@@ -115,6 +119,7 @@ class SalonCard extends StatelessWidget {
                 ),
               ],
             ),
+
             // Info
             Padding(
               padding: const EdgeInsets.all(14),

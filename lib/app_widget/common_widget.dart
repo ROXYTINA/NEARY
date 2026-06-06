@@ -11,10 +11,8 @@ export 'stylist_widgets.dart';
 export 'section_header.dart';
 export 'empty_state.dart';
 export 'time_slot_picker.dart';
+export 'network_image_widgets.dart';
 
 // Shimmer helpers for backwards compatibility
 Widget _shimmerBox(double h) => shimmerBox(h);
 Widget _errorBox(double h) => errorBox(h);
-
-
-

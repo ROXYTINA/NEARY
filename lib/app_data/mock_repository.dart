@@ -246,7 +246,7 @@ class MockRepository {
         ),
       ];
 
-  List<Stylist> _defaultStylists() => const [
+  List<Stylist> _defaultStylists() => [
         Stylist(
           id: 'st1',
           salonId: 's1',
@@ -254,12 +254,13 @@ class MockRepository {
           role: 'Senior Stylist',
           rating: 4.9,
           avatar: '',
-          specialties: ['Hair', 'Styling'],
-          yearsExp: 7,
+          skills: ['Hair', 'Styling'],
         ),
       ];
 
-  List<Review> _defaultReviews() => const <Review>[];
+    List<Review> _defaultReviews() => [
+
+    ];
 
   List<Promotion> _defaultPromotions() => const <Promotion>[];
 
@@ -323,6 +324,10 @@ class MockRepository {
   // ---- Reviews ----
   List<Review> getReviewsForSalon(String salonId) =>
       _reviews.where((r) => r.salonId == salonId).toList();
+
+  // Alias so both names work
+  List<Review> getReviewsBySalonId(String salonId) =>
+      getReviewsForSalon(salonId);
 
   List<Review> getAllReviews() => List.unmodifiable(_reviews);
 

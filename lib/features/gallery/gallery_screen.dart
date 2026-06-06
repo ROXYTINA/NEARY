@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../app_data/mock_repository.dart';
 import '../../app_widget/common_widget.dart';
+import '../../app_theme/app_colors.dart';
+import '../../app_theme/app_text_styles.dart';
 
 class GalleryScreen extends StatelessWidget {
   final String salonId;
@@ -9,24 +11,37 @@ class GalleryScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = MockRepository.instance.getGalleryForSalon(salonId);
+    
     return Scaffold(
-      appBar: AppBar(title: const Text('Gallery')),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(8),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
-        itemCount: items.length,
-        itemBuilder: (_, i) {
-          final it = items[i];
-          return Card(
-            clipBehavior: Clip.hardEdge,
-            child: SafeNetworkImage(
-              imageUrl: it.url,
-              fit: BoxFit.cover,
-            ),
-          );
-        },
+      backgroundColor: AppColors.blushWhite,
+      appBar: AppBar(
+        title: const Text('Gallery'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
       ),
+      body: items.isEmpty
+          ? Center(child: Text('No images in gallery.', style: AppTextStyles.bodyLg))
+          : GridView.builder(
+              padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: items.length,
+              itemBuilder: (_, i) {
+                final it = items[i];
+                return ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: SafeNetworkImage(
+                    imageUrl: it.url,
+                    fit: BoxFit.cover,
+                  ),
+                );
+              },
+            ),
     );
   }
 }
-

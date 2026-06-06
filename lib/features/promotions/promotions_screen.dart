@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import '../../app_data/mock_repository.dart';
-import '../../app_state/notifiers.dart';
-import '../../app_theme/app_colors.dart';
-import '../../app_theme/app_text_styles.dart';
+import '../../app_data/api_service.dart';
+import '../../app_model/models.dart';
+import '../../app_state/api_settings.dart';
 import '../../app_widget/common_widget.dart';
 
 class PromotionsScreen extends StatefulWidget {
@@ -16,30 +14,47 @@ class PromotionsScreen extends StatefulWidget {
 
 class _PromotionsScreenState extends State<PromotionsScreen> {
   String _selectedCategory = 'All';
+  List<Promotion> _promos = [];
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
+    final results = await ApiService(baseUrl).getPromotions();
+    if (mounted) setState(() { _promos = results; _loading = false; });
+  }
 
   @override
   Widget build(BuildContext context) {
-    final repo = MockRepository.instance;
-    final promos = _selectedCategory == 'All'
-        ? repo.getAllPromotions()
-        : repo.getPromotionsByCategory(_selectedCategory);
+    final filtered = _selectedCategory == 'All'
+        ? _promos
+        : _promos.where((p) => p.category == _selectedCategory).toList();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Promotions & Coupons')),
-      body: Column(
+      body: _loading
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: ['All', 'Hair', 'Nails', 'Makeup', 'Spa', 'Bridal', 'General']
+                children: ['All', 'Hair', 'Nails', 'Makeup', 'Spa',
+                  'Bridal', 'General']
                     .map((cat) => Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: FilterChip(
                     selected: _selectedCategory == cat,
                     label: Text(cat),
-                    onSelected: (_) => setState(() => _selectedCategory = cat),
+                    onSelected: (_) => setState(
+                            () => _selectedCategory = cat),
                   ),
                 ))
                     .toList(),
@@ -47,27 +62,30 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
             ),
           ),
           Expanded(
-            child: promos.isEmpty
-                ? EmptyState(
+            child: filtered.isEmpty
+                ? const EmptyState(
               icon: Icons.local_offer_outlined,
               title: 'No promotions',
               message: 'Check back later for great deals',
             )
                 : ListView.builder(
               padding: const EdgeInsets.all(16),
-              itemCount: promos.length,
+              itemCount: filtered.length,
               itemBuilder: (_, i) {
-                final promo = promos[i];
+                final promo = filtered[i];
                 return PromotionCard(
                   promo: promo,
                   onCopy: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Code ${promo.code} copied!')),
+                      SnackBar(
+                          content: Text(
+                              'Code ${promo.code} copied!')),
                     );
                   },
                   onUse: () {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Redeem at salon')),
+                      const SnackBar(
+                          content: Text('Redeem at salon')),
                     );
                   },
                 );
@@ -79,4 +97,3 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
     );
   }
 }
-

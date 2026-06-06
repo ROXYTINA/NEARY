@@ -4,14 +4,17 @@ import 'app_colors.dart';
 class AppTextStyles {
   AppTextStyles._();
 
-  // --- Display / Hero (Cormorant Serif) ---
+
+  // ── Display / Hero (Cormorant) ────────────────────────────
+  // NO color here — color comes from theme's textTheme or
+  // explicit Theme.of(context).textTheme usage
   static const TextStyle heroDisplay = TextStyle(
     fontFamily: 'Cormorant',
     fontSize: 42,
     fontWeight: FontWeight.w700,
     height: 1.1,
     letterSpacing: -0.5,
-    color: AppColors.charcoal,
+    // no color
   );
 
   static const TextStyle displayLg = TextStyle(
@@ -19,7 +22,6 @@ class AppTextStyles {
     fontSize: 34,
     fontWeight: FontWeight.w700,
     height: 1.15,
-    color: AppColors.charcoal,
   );
 
   static const TextStyle displayMd = TextStyle(
@@ -27,7 +29,6 @@ class AppTextStyles {
     fontSize: 28,
     fontWeight: FontWeight.w700,
     height: 1.2,
-    color: AppColors.charcoal,
   );
 
   static const TextStyle displaySm = TextStyle(
@@ -35,13 +36,12 @@ class AppTextStyles {
     fontSize: 22,
     fontWeight: FontWeight.w700,
     height: 1.25,
-    color: AppColors.charcoal,
   );
 
-  // --- Title aliases used across app ---
   static const TextStyle titleLg = displayMd;
   static const TextStyle titleMd = displaySm;
 
+  // This one keeps its color — it's always rose, intentional brand color
   static const TextStyle displayItalic = TextStyle(
     fontFamily: 'Cormorant',
     fontSize: 26,
@@ -51,13 +51,12 @@ class AppTextStyles {
     color: AppColors.rosePrimary,
   );
 
-  // --- Body / UI (Jost) ---
+  // ── Body (Jost) ───────────────────────────────────────────
   static const TextStyle bodyLg = TextStyle(
     fontFamily: 'Jost',
     fontSize: 16,
     fontWeight: FontWeight.w400,
     height: 1.6,
-    color: AppColors.charcoal,
   );
 
   static const TextStyle bodyMd = TextStyle(
@@ -65,7 +64,6 @@ class AppTextStyles {
     fontSize: 14,
     fontWeight: FontWeight.w400,
     height: 1.5,
-    color: AppColors.charcoal,
   );
 
   static const TextStyle bodySm = TextStyle(
@@ -73,15 +71,14 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.5,
-    color: AppColors.warmGrey,
   );
 
+  // ── Labels ────────────────────────────────────────────────
   static const TextStyle labelLg = TextStyle(
     fontFamily: 'Jost',
     fontSize: 14,
     fontWeight: FontWeight.w500,
     letterSpacing: 1.2,
-    color: AppColors.charcoal,
   );
 
   static const TextStyle labelMd = TextStyle(
@@ -89,7 +86,6 @@ class AppTextStyles {
     fontSize: 12,
     fontWeight: FontWeight.w500,
     letterSpacing: 1.0,
-    color: AppColors.warmGrey,
   );
 
   static const TextStyle labelSm = TextStyle(
@@ -97,9 +93,9 @@ class AppTextStyles {
     fontSize: 10,
     fontWeight: FontWeight.w500,
     letterSpacing: 0.8,
-    color: AppColors.warmGrey,
   );
 
+  // ── Price — always rose, intentional ─────────────────────
   static const TextStyle price = TextStyle(
     fontFamily: 'Jost',
     fontSize: 20,
@@ -115,6 +111,7 @@ class AppTextStyles {
     color: AppColors.rosePrimary,
   );
 
+  // ── Button — always white (on colored button bg) ──────────
   static const TextStyle button = TextStyle(
     fontFamily: 'Jost',
     fontSize: 14,
@@ -123,12 +120,12 @@ class AppTextStyles {
     color: Colors.white,
   );
 
+  // ── Caption / Nav ─────────────────────────────────────────
   static const TextStyle caption = TextStyle(
     fontFamily: 'Jost',
     fontSize: 11,
     fontWeight: FontWeight.w300,
     letterSpacing: 0.3,
-    color: AppColors.warmGrey,
   );
 
   static const TextStyle navLabel = TextStyle(
@@ -137,4 +134,17 @@ class AppTextStyles {
     fontWeight: FontWeight.w500,
     letterSpacing: 0.5,
   );
+}
+
+// Add to app_text_styles.dart
+class AppTextTheme {
+  static TextStyle primary(BuildContext context, TextStyle base) =>
+      base.copyWith(color: Theme.of(context).colorScheme.onSurface);
+
+  static TextStyle secondary(BuildContext context, TextStyle base) =>
+      base.copyWith(
+          color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6));
+
+  static TextStyle accent(BuildContext context, TextStyle base) =>
+      base.copyWith(color: Theme.of(context).colorScheme.primary);
 }

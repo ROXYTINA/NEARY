@@ -2,11 +2,13 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 import '../app_model/models.dart';
 import '../app_data/api_service.dart';
 import '../app_data/mock_repository.dart';
 import 'api_settings.dart';
+import 'package:flutter/material.dart';
 
 // ============================================================
 // FavoritesNotifier
@@ -254,6 +256,177 @@ class BookingNotifier extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = _bookings.map((b) => json.encode(b.toJson())).toList();
     await prefs.setStringList(_bookingsKey, raw);
+  }
+}
+
+// ============================================================
+// AuthNotifier
+// ============================================================
+class AuthNotifier extends ChangeNotifier {
+  static const _tokenKey = 'auth_token';
+  static const _nameKey  = 'auth_name';
+  static const _emailKey = 'auth_email';
+
+  String? _token;
+  String? _fullName;
+  String? _email;
+
+  bool get isLoggedIn => _token != null;
+  String? get token    => _token;
+  String? get fullName => _fullName;
+  String? get email    => _email;
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token    = prefs.getString(_tokenKey);
+    _fullName = prefs.getString(_nameKey);
+    _email    = prefs.getString(_emailKey);
+    notifyListeners();
+  }
+
+  Future<bool> login(String baseUrl, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/login'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'username': email, 'password': password},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _token = data['access_token'];
+        _email = email;
+        notifyListeners();
+        await _persist();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Login error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> register(String baseUrl, String email, String password, String fullName) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'full_name': fullName,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return await login(baseUrl, email, password);
+      }
+    } catch (e) {
+      debugPrint('Register error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> updateProfile(String baseUrl, {String? fullName, String? email}) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/auth/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode({
+          if (fullName != null) 'full_name': fullName,
+          if (email != null) 'email': email,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _fullName = data['full_name'];
+        _email    = data['email'];
+        notifyListeners();
+        await _persist();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Update profile error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> changePassword(String baseUrl, {
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/change-password'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Change password error: $e');
+    }
+    return false;
+  }
+
+  Future<void> logout() async {
+    _token    = null;
+    _fullName = null;
+    _email    = null;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_nameKey);
+    await prefs.remove(_emailKey);
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_token    != null) await prefs.setString(_tokenKey, _token!);
+    if (_fullName != null) await prefs.setString(_nameKey,  _fullName!);
+    if (_email    != null) await prefs.setString(_emailKey, _email!);
+  }
+}
+
+
+// ============================================================
+// ThemeNotifier
+// ============================================================
+class ThemeNotifier extends ChangeNotifier {
+  static const _key = 'theme_mode';
+  ThemeMode _mode = ThemeMode.system;
+  ThemeMode get mode => _mode;
+
+  bool get isDark => _mode == ThemeMode.dark;
+  bool get isLight => _mode == ThemeMode.light;
+  bool get isSystem => _mode == ThemeMode.system;
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    final saved = prefs.getString(_key);
+    _mode = switch (saved) {
+      'dark'   => ThemeMode.dark,
+      'light'  => ThemeMode.light,
+      _        => ThemeMode.system,
+    };
+    notifyListeners();
+  }
+
+  Future<void> setMode(ThemeMode mode) async {
+    _mode = mode;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_key, switch (mode) {
+      ThemeMode.dark   => 'dark',
+      ThemeMode.light  => 'light',
+      ThemeMode.system => 'system',
+    });
   }
 }
 

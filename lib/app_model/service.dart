@@ -24,16 +24,16 @@ class SalonService {
   });
 
   factory SalonService.fromJson(Map<String, dynamic> j) => SalonService(
-    id: j['id'],
-    salonId: j['salonId'],
-    name: j['name'],
-    category: j['category'],
-    durationMinutes: j['durationMinutes'],
-    price: (j['price'] as num).toDouble(),
-    description: j['description'] ?? '',
+    id: j['id']?.toString() ?? '',
+    salonId: j['salonId']?.toString() ?? j['salon_id']?.toString() ?? '',
+    name: j['name']?.toString() ?? '',
+    category: j['category']?.toString() ?? '',
+    durationMinutes: (j['durationMinutes'] as num?)?.toInt() ?? 0,
+    price: (j['price'] as num?)?.toDouble() ?? 0.0,
+    description: j['description']?.toString() ?? '',
     beforeAfterImages: List<String>.from(j['beforeAfterImages'] ?? []),
     stylistIds: List<String>.from(j['stylistIds'] ?? []),
-    rating: (j['rating'] as num? ?? 4.5).toDouble(),
+    rating: (j['rating'] as num?)?.toDouble() ?? 4.5,
   );
 
   String get durationLabel {
