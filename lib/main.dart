@@ -23,8 +23,9 @@ void main() async {
   await theme.load();
 
   await onboarding.load();
-  await favorites.load();
   await booking.load(apiSettings.baseUrl);
+  await favorites.load();
+  await favorites.rehydrate(apiSettings.baseUrl);
 
   runApp(
     MultiProvider(

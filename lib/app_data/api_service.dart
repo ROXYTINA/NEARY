@@ -7,16 +7,17 @@ class ApiService {
   final String baseUrl;
   ApiService(this.baseUrl);
 
+
+  // ============================================================
+  // GET all salons
+  // ============================================================
   Future<List<Salon>> getSalons() async {
     try {
-
       final response = await http.get(Uri.parse('$baseUrl/api/salons/'));
-
       if (response.statusCode == 200) {
         final List<dynamic> data = json.decode(response.body);
         return data.map((j) => Salon.fromJson(j)).toList();
       }
-
     } catch (e) {
       print('API Error (Salons): $e');
 
@@ -24,22 +25,26 @@ class ApiService {
     return [];
   }
 
+
+  // ============================================================
+  // GET all salons details
+  // ============================================================
   Future<Salon?> getSalonDetails(String id) async {
-
     try {
-
       final response = await http.get(Uri.parse('$baseUrl/api/salons/$id'));
       if (response.statusCode == 200) {
         return Salon.fromJson(json.decode(response.body));
       }
-
     } catch (e) {
       print('API Error (Salon Details): $e');
     }
-
     return null;
   }
 
+
+  // ============================================================
+  // GET all salons services
+  // ============================================================
   Future<List<SalonService>> getServicesForSalon(String id) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/salons/$id/services'));
@@ -53,6 +58,9 @@ class ApiService {
     return [];
   }
 
+  // ============================================================
+  // GET all salons reviews
+  // ============================================================
   Future<List<Review>> getReviewsForSalon(String id) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/salons/$id/reviews'));
@@ -67,6 +75,9 @@ class ApiService {
   }
 
 
+  // ============================================================
+  // GET all salons stylists
+  // ============================================================
   Future<List<Stylist>> getStylistsForSalon(String id) async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/salons/$id/stylists'));
@@ -80,6 +91,9 @@ class ApiService {
     return [];
   }
 
+  // ============================================================
+  // GET all salons available slots for booking
+  // ============================================================
   Future<List<String>> getAvailableSlots(String salonId, DateTime date) async {
     try {
       final dateStr = DateFormat('yyyy-MM-dd').format(date);
@@ -93,6 +107,10 @@ class ApiService {
     return [];
   }
 
+
+  // ============================================================
+  // GET all user's bookings
+  // ============================================================
   Future<List<Booking>> getMyBookings() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/bookings/my-bookings'));
@@ -106,6 +124,10 @@ class ApiService {
     return [];
   }
 
+
+  // ============================================================
+  // POST user's booking
+  // ============================================================
   Future<bool> createBooking(Map<String, dynamic> payload) async {
     try {
       final response = await http.post(
@@ -120,6 +142,9 @@ class ApiService {
     }
   }
 
+  // ============================================================
+  // GET all promotions
+  // ============================================================
   Future<List<Promotion>> getPromotions() async {
     try {
       final response = await http.get(Uri.parse('$baseUrl/api/promotions/'));

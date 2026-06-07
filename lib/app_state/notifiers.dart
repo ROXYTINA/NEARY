@@ -9,55 +9,199 @@ import '../app_data/api_service.dart';
 import '../app_data/mock_repository.dart';
 import 'api_settings.dart';
 import 'package:flutter/material.dart';
+import '../app_data/api_service.dart';
+
+
+// ============================================================
+// AuthNotifier
+// ============================================================
+class AuthNotifier extends ChangeNotifier {
+  static const _tokenKey = 'auth_token';
+  static const _nameKey  = 'auth_name';
+  static const _emailKey = 'auth_email';
+
+  String? _token;
+  String? _fullName;
+  String? _email;
+
+  bool get isLoggedIn => _token != null;
+  String? get token    => _token;
+  String? get fullName => _fullName;
+  String? get email    => _email;
+
+  Future<void> load() async {
+    final prefs = await SharedPreferences.getInstance();
+    _token    = prefs.getString(_tokenKey);
+    _fullName = prefs.getString(_nameKey);
+    _email    = prefs.getString(_emailKey);
+    notifyListeners();
+  }
+
+  Future<bool> login(String baseUrl, String email, String password) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/login'),
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: {'username': email, 'password': password},
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _token = data['access_token'];
+        _email = email;
+        notifyListeners();
+        await _persist();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Login error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> register(String baseUrl, String email, String password, String fullName) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/register'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode({
+          'email': email,
+          'password': password,
+          'full_name': fullName,
+        }),
+      );
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return await login(baseUrl, email, password);
+      }
+    } catch (e) {
+      debugPrint('Register error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> updateProfile(String baseUrl, {String? fullName, String? email}) async {
+    try {
+      final response = await http.put(
+        Uri.parse('$baseUrl/api/auth/profile'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode({
+          if (fullName != null) 'full_name': fullName,
+          if (email != null) 'email': email,
+        }),
+      );
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        _fullName = data['full_name'];
+        _email    = data['email'];
+        notifyListeners();
+        await _persist();
+        return true;
+      }
+    } catch (e) {
+      debugPrint('Update profile error: $e');
+    }
+    return false;
+  }
+
+  Future<bool> changePassword(String baseUrl, {
+    required String currentPassword,
+    required String newPassword,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/auth/change-password'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $_token',
+        },
+        body: json.encode({
+          'current_password': currentPassword,
+          'new_password': newPassword,
+        }),
+      );
+      return response.statusCode == 200;
+    } catch (e) {
+      debugPrint('Change password error: $e');
+    }
+    return false;
+  }
+
+  Future<void> logout() async {
+    _token    = null;
+    _fullName = null;
+    _email    = null;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_tokenKey);
+    await prefs.remove(_nameKey);
+    await prefs.remove(_emailKey);
+  }
+
+  Future<void> _persist() async {
+    final prefs = await SharedPreferences.getInstance();
+    if (_token    != null) await prefs.setString(_tokenKey, _token!);
+    if (_fullName != null) await prefs.setString(_nameKey,  _fullName!);
+    if (_email    != null) await prefs.setString(_emailKey, _email!);
+  }
+}
+
+
 
 // ============================================================
 // FavoritesNotifier
 // ============================================================
 class FavoritesNotifier extends ChangeNotifier {
-  static const _salonsKey = 'fav_salons';
+  static const _salonsKey   = 'fav_salons';
   static const _servicesKey = 'fav_services';
 
-  Set<String> _favSalonIds = {};
-  Set<String> _favServiceIds = {};
+  Set<String>  _favSalonIds   = {};
+  Set<String>  _favServiceIds = {};
 
-  Set<String> get favSalonIds => Set.unmodifiable(_favSalonIds);
+  // ✅ Store full objects from API
+  final Map<String, Salon>        _salonCache   = {};
+  final Map<String, SalonService> _serviceCache = {};
+
+  Set<String> get favSalonIds   => Set.unmodifiable(_favSalonIds);
   Set<String> get favServiceIds => Set.unmodifiable(_favServiceIds);
 
-  List<Salon> get favSalons => MockRepository.instance
-      .getAllSalons()
-      .where((s) => _favSalonIds.contains(s.id))
-      .toList();
+  // ✅ Return from cache, not MockRepository
+  List<Salon> get favSalons =>
+      _favSalonIds.map((id) => _salonCache[id]).whereType<Salon>().toList();
 
-  List<SalonService> get favServices => MockRepository.instance
-      .getAllServices()
-      .where((s) => _favServiceIds.contains(s.id))
-      .toList();
+  List<SalonService> get favServices =>
+      _favServiceIds.map((id) => _serviceCache[id]).whereType<SalonService>().toList();
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();
-    _favSalonIds = Set<String>.from(prefs.getStringList(_salonsKey) ?? []);
+    _favSalonIds   = Set<String>.from(prefs.getStringList(_salonsKey)   ?? []);
     _favServiceIds = Set<String>.from(prefs.getStringList(_servicesKey) ?? []);
     notifyListeners();
   }
 
-  bool isSalonFav(String id) => _favSalonIds.contains(id);
+  bool isSalonFav(String id)   => _favSalonIds.contains(id);
   bool isServiceFav(String id) => _favServiceIds.contains(id);
 
-  Future<void> toggleSalon(String id) async {
-    if (_favSalonIds.contains(id)) {
-      _favSalonIds.remove(id);
+  Future<void> toggleSalon(Salon salon) async {
+    if (_favSalonIds.contains(salon.id)) {
+      _favSalonIds.remove(salon.id);
+      _salonCache.remove(salon.id);
     } else {
-      _favSalonIds.add(id);
+      _favSalonIds.add(salon.id);
+      _salonCache[salon.id] = salon;  // cache it
     }
     notifyListeners();
     await _persist();
   }
 
-  Future<void> toggleService(String id) async {
-    if (_favServiceIds.contains(id)) {
-      _favServiceIds.remove(id);
+  Future<void> toggleService(SalonService service) async {
+    if (_favServiceIds.contains(service.id)) {
+      _favServiceIds.remove(service.id);
+      _serviceCache.remove(service.id);
     } else {
-      _favServiceIds.add(id);
+      _favServiceIds.add(service.id);
+      _serviceCache[service.id] = service;
     }
     notifyListeners();
     await _persist();
@@ -65,21 +209,40 @@ class FavoritesNotifier extends ChangeNotifier {
 
   Future<void> removeSalon(String id) async {
     _favSalonIds.remove(id);
+    _salonCache.remove(id);
     notifyListeners();
     await _persist();
   }
 
   Future<void> removeService(String id) async {
     _favServiceIds.remove(id);
+    _serviceCache.remove(id);
     notifyListeners();
     await _persist();
   }
 
   Future<void> _persist() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList(_salonsKey, _favSalonIds.toList());
+    await prefs.setStringList(_salonsKey,   _favSalonIds.toList());
     await prefs.setStringList(_servicesKey, _favServiceIds.toList());
   }
+
+  Future<void> rehydrate(String baseUrl) async {
+    if (_favSalonIds.isEmpty) return;
+    try {
+      final api = ApiService(baseUrl);
+      for (final id in _favSalonIds) {
+        if (!_salonCache.containsKey(id)) {
+          final salon = await api.getSalonDetails(id);
+          if (salon != null) _salonCache[id] = salon;
+        }
+      }
+      notifyListeners();
+    } catch (e) {
+      debugPrint('FavoritesNotifier rehydrate error: $e');
+    }
+  }
+
 }
 
 // ============================================================
@@ -256,141 +419,6 @@ class BookingNotifier extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     final raw = _bookings.map((b) => json.encode(b.toJson())).toList();
     await prefs.setStringList(_bookingsKey, raw);
-  }
-}
-
-// ============================================================
-// AuthNotifier
-// ============================================================
-class AuthNotifier extends ChangeNotifier {
-  static const _tokenKey = 'auth_token';
-  static const _nameKey  = 'auth_name';
-  static const _emailKey = 'auth_email';
-
-  String? _token;
-  String? _fullName;
-  String? _email;
-
-  bool get isLoggedIn => _token != null;
-  String? get token    => _token;
-  String? get fullName => _fullName;
-  String? get email    => _email;
-
-  Future<void> load() async {
-    final prefs = await SharedPreferences.getInstance();
-    _token    = prefs.getString(_tokenKey);
-    _fullName = prefs.getString(_nameKey);
-    _email    = prefs.getString(_emailKey);
-    notifyListeners();
-  }
-
-  Future<bool> login(String baseUrl, String email, String password) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/login'),
-        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-        body: {'username': email, 'password': password},
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _token = data['access_token'];
-        _email = email;
-        notifyListeners();
-        await _persist();
-        return true;
-      }
-    } catch (e) {
-      debugPrint('Login error: $e');
-    }
-    return false;
-  }
-
-  Future<bool> register(String baseUrl, String email, String password, String fullName) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/register'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'email': email,
-          'password': password,
-          'full_name': fullName,
-        }),
-      );
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return await login(baseUrl, email, password);
-      }
-    } catch (e) {
-      debugPrint('Register error: $e');
-    }
-    return false;
-  }
-
-  Future<bool> updateProfile(String baseUrl, {String? fullName, String? email}) async {
-    try {
-      final response = await http.put(
-        Uri.parse('$baseUrl/api/auth/profile'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-        body: json.encode({
-          if (fullName != null) 'full_name': fullName,
-          if (email != null) 'email': email,
-        }),
-      );
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        _fullName = data['full_name'];
-        _email    = data['email'];
-        notifyListeners();
-        await _persist();
-        return true;
-      }
-    } catch (e) {
-      debugPrint('Update profile error: $e');
-    }
-    return false;
-  }
-
-  Future<bool> changePassword(String baseUrl, {
-    required String currentPassword,
-    required String newPassword,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/auth/change-password'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $_token',
-        },
-        body: json.encode({
-          'current_password': currentPassword,
-          'new_password': newPassword,
-        }),
-      );
-      return response.statusCode == 200;
-    } catch (e) {
-      debugPrint('Change password error: $e');
-    }
-    return false;
-  }
-
-  Future<void> logout() async {
-    _token    = null;
-    _fullName = null;
-    _email    = null;
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_tokenKey);
-    await prefs.remove(_nameKey);
-    await prefs.remove(_emailKey);
-  }
-
-  Future<void> _persist() async {
-    final prefs = await SharedPreferences.getInstance();
-    if (_token    != null) await prefs.setString(_tokenKey, _token!);
-    if (_fullName != null) await prefs.setString(_nameKey,  _fullName!);
-    if (_email    != null) await prefs.setString(_emailKey, _email!);
   }
 }
 

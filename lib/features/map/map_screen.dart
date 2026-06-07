@@ -14,7 +14,12 @@ class MapScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Map'),
+        title: Text(
+          'MAP',
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: FlutterMap(
         options: const MapOptions(

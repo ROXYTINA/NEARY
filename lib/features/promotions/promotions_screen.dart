@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../../app_data/api_service.dart';
 import '../../app_model/models.dart';
 import '../../app_state/api_settings.dart';
+import '../../app_theme/app_text_styles.dart';
 import '../../app_widget/common_widget.dart';
 
 class PromotionsScreen extends StatefulWidget {
@@ -36,7 +37,14 @@ class _PromotionsScreenState extends State<PromotionsScreen> {
         : _promos.where((p) => p.category == _selectedCategory).toList();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Promotions & Coupons')),
+      appBar: AppBar(
+        title: Text(
+          'Promotions & Coupons',
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : Column(

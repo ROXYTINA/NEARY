@@ -137,7 +137,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   isFav ? Icons.favorite : Icons.favorite_border,
                   color: Colors.white,
                 ),
-                onPressed: () => favorites.toggleSalon(salon.id),
+                onPressed: () => favorites.toggleSalon(salon),
               ),
             ],
           ),
@@ -146,6 +146,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+
                 // ── Salon Info ─────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.all(16),

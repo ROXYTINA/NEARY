@@ -25,6 +25,9 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   int _currentStep = 0;
   late PageController _pageController;
 
+  late final TextEditingController _nameCtrl;
+  late final TextEditingController _phoneCtrl;
+
   Salon? _salon;
   List<SalonService> _services = [];
   List<Stylist> _stylists = [];
@@ -35,6 +38,8 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   @override
   void initState() {
     _pageController = PageController();
+    _nameCtrl  = TextEditingController();
+    _phoneCtrl = TextEditingController();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _loadData();
@@ -287,24 +292,29 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   }
 
   Widget _buildInfoStep(BookingNotifier booking) {
-    final nameCtrl = TextEditingController(text: booking.draftCustomerName);
-    final phoneCtrl = TextEditingController(text: booking.draftCustomerPhone);
-
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           TextField(
-            controller: nameCtrl,
-            decoration: const InputDecoration(labelText: 'Full Name'),
-            onChanged: (v) => booking.updateCustomerInfo(v, phoneCtrl.text),
+            controller: _nameCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Full Name',
+              prefixIcon: Icon(Icons.person_outline),
+            ),
+            textCapitalization: TextCapitalization.words,
+            onChanged: (v) => booking.updateCustomerInfo(v, _phoneCtrl.text),
           ),
           const SizedBox(height: 16),
           TextField(
-            controller: phoneCtrl,
-            decoration: const InputDecoration(labelText: 'Phone'),
-            onChanged: (v) => booking.updateCustomerInfo(nameCtrl.text, v),
+            controller: _phoneCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Phone',
+              prefixIcon: Icon(Icons.phone_outlined),
+            ),
+            keyboardType: TextInputType.phone,
+            onChanged: (v) => booking.updateCustomerInfo(_nameCtrl.text, v),
           ),
           const SizedBox(height: 20),
           Card(
@@ -325,13 +335,17 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                       ],
                     ),
                   )),
-                  Divider(),
+                  const Divider(),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('Total', style: TextStyle(fontWeight: FontWeight.bold)),
-                      Text('\$${booking.draftTotal.toStringAsFixed(0)}',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const Text('Total',
+                          style: TextStyle(fontWeight: FontWeight.bold)),
+                      Text(
+                        '\$${booking.draftTotal.toStringAsFixed(0)}',
+                        style: const TextStyle(
+                            fontWeight: FontWeight.bold, fontSize: 16),
+                      ),
                     ],
                   ),
                 ],
@@ -428,6 +442,8 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
   @override
   void dispose() {
     _pageController.dispose();
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 }

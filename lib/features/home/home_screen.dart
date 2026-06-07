@@ -112,6 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
       ) : null,
       body: CustomScrollView(
         slivers: [
+
           // App bar
           SliverAppBar(
             expandedHeight: 0,
@@ -226,7 +227,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           .map((s) => SalonCard(
                         salon: s,
                         isFav: favs.isSalonFav(s.id),
-                        onFav: () => favs.toggleSalon(s.id),
+                        onFav: () => favs.toggleSalon(s),
                         onTap: () => context.push('/salon/${s.id}'),
                       ))
                           .toList(),

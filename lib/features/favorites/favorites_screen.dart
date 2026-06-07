@@ -13,8 +13,14 @@ class FavoritesScreen extends StatefulWidget {
   State<FavoritesScreen> createState() => _FavoritesScreenState();
 }
 
-class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProviderStateMixin {
+
+class _FavoritesScreenState extends State<FavoritesScreen>
+    with SingleTickerProviderStateMixin, AutomaticKeepAliveClientMixin {
+
   late TabController _tabController;
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -24,17 +30,30 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
 
   @override
   Widget build(BuildContext context) {
+
+    super.build(context);
+
     final favs = context.watch<FavoritesNotifier>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Favorites')),
+      appBar: AppBar(
+        title: Text(
+          'Favorites',
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ),
+
       body: Column(
         children: [
           TabBar(controller: _tabController, tabs: const [Tab(text: 'Salons'), Tab(text: 'Services')]),
           Expanded(
             child: TabBarView(
               controller: _tabController,
+
               children: [
+
                 // Salons Tab
                 favs.favSalons.isEmpty
                     ? EmptyState(
@@ -59,6 +78,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> with SingleTickerProv
                     );
                   },
                 ),
+
                 // Services Tab
                 favs.favServices.isEmpty
                     ? EmptyState(
