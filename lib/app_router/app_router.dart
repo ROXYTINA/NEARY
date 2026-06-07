@@ -86,9 +86,10 @@ class AppRouter {
           ),
         ),
         GoRoute(
-          path: '/service/:id',
+          path: '/service/:salonId/:serviceId',
           builder: (_, state) => ServiceDetailScreen(
-            serviceId: state.pathParameters['id']!,
+            salonId: state.pathParameters['salonId']!,
+            serviceId: state.pathParameters['serviceId']!,
           ),
         ),
 
