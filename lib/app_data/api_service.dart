@@ -158,5 +158,19 @@ class ApiService {
     return [];
   }
 
+  // ============================================================
+  // GET single service by ID
+  // ============================================================
+  Future<SalonService?> getServiceById(String serviceId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/services/$serviceId'));
+      if (response.statusCode == 200) {
+        return SalonService.fromJson(json.decode(response.body));
+      }
+    } catch (e) {
+      print('API Error (Service Detail): $e');
+    }
+    return null;
+  }
 
 }

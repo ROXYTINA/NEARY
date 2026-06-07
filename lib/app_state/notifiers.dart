@@ -537,4 +537,6 @@ class ChatNotifier extends ChangeNotifier {
     _threads[salonId] = [...(_threads[salonId] ?? []), reply];
     notifyListeners();
   }
+
+
 }
