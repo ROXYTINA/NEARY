@@ -8,6 +8,7 @@ import '../../app_theme/app_text_styles.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
 
+
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
 
@@ -21,7 +22,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   void initState() {
     super.initState();
-    // ✅ Skip onboarding for returning users
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final onboarding = context.read<OnboardingNotifier>();
       if (onboarding.isDone) {
@@ -63,11 +64,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         body: SafeArea(
           child: Column(
             children: [
+
               // ── Logo small at top ──────────────────────────────
               Padding(
                 padding: const EdgeInsets.only(top: 24),
                 child: Image.asset(
-                  'assets/images/logo.png',
+                  'assets/images/img.png',
                   height: 80,
                   errorBuilder: (_, __, ___) =>
                   const Icon(Icons.spa, size: 60, color: AppColors.rosePrimary),

@@ -55,6 +55,7 @@ class SalonCard extends StatelessWidget {
                     borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
                     child: CachedNetworkImage(
                       imageUrl: salon.coverImage,
+                      cacheKey: 'salon_${salon.id}',
                       height: compact ? 130 : 180,
                       width: double.infinity,
                       fit: BoxFit.cover,

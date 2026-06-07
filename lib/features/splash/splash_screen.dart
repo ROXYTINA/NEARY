@@ -169,7 +169,6 @@ class _SplashScreenState extends State<SplashScreen>
                         child: Image.asset(
                           'assets/images/img.png',
                           fit: BoxFit.cover,
-                          // ✅ fallback if asset missing
                           errorBuilder: (_, __, ___) => const Icon(
                             Icons.spa,
                             size: 60,
@@ -216,10 +215,13 @@ class _SplashScreenState extends State<SplashScreen>
                 FadeTransition(
                   opacity: _tagOpacity,
                   child: Text(
-                    'Your beauty, your way',
+                    'BUILD FOR ALL MY GIRLIES',
+                    textAlign: TextAlign.center,
                     style: AppTextStyles.caption.copyWith(
                       color: AppColors.warmGrey,
-                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 3,
+                      height: 1.5,
                     ),
                   ),
                 ),
