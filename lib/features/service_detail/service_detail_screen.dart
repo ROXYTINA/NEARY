@@ -252,7 +252,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                                     ),
                                   ),
                                   onPressed: () =>
-                                      context.go('/booking/${widget.salonId}'),
+                                      context.push('/service/${widget.serviceId}/${widget.salonId}'),
                                   child: const Text(
                                     'Book Now',
                                     style: TextStyle(

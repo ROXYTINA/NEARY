@@ -239,7 +239,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                     return ServiceCard(
                       service: svc,
                       isSelected: selectedServiceIds.contains(svc.id),
-                      onTap: () => context.go('/service/${svc.salonId}/${svc.id}'),
+                      onTap: () => context.push('/service/${svc.salonId}/${svc.id}'),
                     );
                   },
                 ),
