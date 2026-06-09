@@ -8,6 +8,8 @@ import 'package:salon_beauty_app/app_model/service.dart';
 import 'package:salon_beauty_app/app_model/stylist.dart';
 import 'package:salon_beauty_app/app_model/review.dart';
 import 'package:salon_beauty_app/app_state/api_settings.dart';
+import 'package:url_launcher/url_launcher.dart';
+
 
 import '../../app_state/notifiers.dart';
 import '../../app_theme/app_colors.dart';
@@ -185,16 +187,43 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined,
-                              size: 16, color: AppColors.warmGrey),
-                          const SizedBox(width: 4),
-                          Expanded(
-                            child: Text(salon.address,
-                                style: AppTextStyles.caption),
+                      InkWell(
+                        onTap: () async {
+                          final url = Uri.parse(
+                            'https://www.google.com/maps/search/?api=1&query=${salon.lat},${salon.lng}',
+                          );
+                          if (await canLaunchUrl(url)) {
+                            await launchUrl(url, mode: LaunchMode.externalApplication);
+                          } else {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Could not launch Google Maps'),
+                                ),
+                              );
+                            }
+                          }
+                        },
+                        borderRadius: BorderRadius.circular(4),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(vertical: 4),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.location_on_outlined,
+                                  size: 16, color: AppColors.warmGrey),
+                              const SizedBox(width: 4),
+                              Expanded(
+                                child: Text(
+                                  salon.address,
+                                  style: AppTextStyles.caption.copyWith(
+                                    decoration: TextDecoration.underline,
+                                    color: Theme.of(context).colorScheme.primary,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
-                        ],
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Row(
