@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -22,6 +23,28 @@ import '../features/settings/settings_screen.dart';
 import '../app_widget/main_shell.dart';
 import '../features/auth/auth_screen.dart';
 import '../features/splash/splash_screen.dart';
+
+// ── Helper: fade transition page ─────────────────────────────────────
+CustomTransitionPage<void> _fadeRoute({
+  required GoRouterState state,
+  required Widget child,
+}) {
+  return CustomTransitionPage<void>(
+    key: state.pageKey,
+    child: child,
+    transitionDuration: const Duration(milliseconds: 220),
+    reverseTransitionDuration: const Duration(milliseconds: 180),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) =>
+        FadeTransition(
+          opacity: CurvedAnimation(
+            parent: animation,
+            curve: Curves.easeIn,
+          ),
+          child: child,
+        ),
+  );
+}
+
 
 class AppRouter {
   static GoRouter router(BuildContext context) {
@@ -79,53 +102,72 @@ class AppRouter {
             ),
           ],
         ),
+
         GoRoute(
           path: '/salon/:id',
-          builder: (_, state) => SalonDetailScreen(
-            salonId: state.pathParameters['id']!,
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: SalonDetailScreen(salonId: state.pathParameters['id']!),
           ),
         ),
         GoRoute(
           path: '/service/:salonId/:serviceId',
-          builder: (_, state) => ServiceDetailScreen(
-            salonId: state.pathParameters['salonId']!,
-            serviceId: state.pathParameters['serviceId']!,
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: ServiceDetailScreen(
+              salonId: state.pathParameters['salonId']!,
+              serviceId: state.pathParameters['serviceId']!,
+            ),
           ),
         ),
 
-        // ── Auth-guarded booking route (single, no duplicate) ──
+        // ── Auth-guarded booking route ──────────────────────────
         GoRoute(
           path: '/booking/:salonId',
-          builder: (context, state) {
-            final auth = context.read<AuthNotifier>();
+          pageBuilder: (context, state) {
+            final auth    = context.read<AuthNotifier>();
             final salonId = state.pathParameters['salonId']!;
-            if (!auth.isLoggedIn) {
-              return AuthScreen(redirectTo: '/booking/$salonId');
-            }
-            return BookingFlowScreen(salonId: salonId);
+            return _fadeRoute(
+              state: state,
+              child: !auth.isLoggedIn
+                  ? AuthScreen(redirectTo: '/booking/$salonId')
+                  : BookingFlowScreen(salonId: salonId),
+            );
           },
         ),
 
         GoRoute(
           path: '/booking-confirmation',
-          builder: (_, __) => const BookingConfirmationScreen(),
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: const BookingConfirmationScreen(),
+          ),
         ),
         GoRoute(
           path: '/chat/:salonId',
-          builder: (_, state) => ChatThreadScreen(
-            salonId: state.pathParameters['salonId']!,
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: ChatThreadScreen(
+              salonId: state.pathParameters['salonId']!,
+            ),
           ),
         ),
         GoRoute(
           path: '/reviews/:salonId',
-          builder: (_, state) => ReviewsScreen(
-            salonId: state.pathParameters['salonId']!,
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: ReviewsScreen(
+              salonId: state.pathParameters['salonId']!,
+            ),
           ),
         ),
         GoRoute(
           path: '/gallery/:salonId',
-          builder: (_, state) => GalleryScreen(
-            salonId: state.pathParameters['salonId']!,
+          pageBuilder: (_, state) => _fadeRoute(
+            state: state,
+            child: GalleryScreen(
+              salonId: state.pathParameters['salonId']!,
+            ),
           ),
         ),
       ],

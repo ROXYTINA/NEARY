@@ -1,4 +1,6 @@
+
 import 'package:flutter/material.dart';
+import '../../app_theme/app_text_styles.dart';
 
 class BookingScreen extends StatefulWidget {
   const BookingScreen({super.key});
@@ -23,7 +25,12 @@ class _BookingScreenState extends State<BookingScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Book Appointment'),
+        title: Text(
+          'Book an Appointment',
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
       ),
       body: Stepper(
         currentStep: currentStep,
@@ -49,9 +56,9 @@ class _BookingScreenState extends State<BookingScreen> {
               decoration: const InputDecoration(labelText: 'Select service'),
               items: _services
                   .map((service) => DropdownMenuItem(
-                        value: service,
-                        child: Text(service),
-                      ))
+                value: service,
+                child: Text(service),
+              ))
                   .toList(),
               onChanged: (value) {
                 if (value != null) {
@@ -70,9 +77,9 @@ class _BookingScreenState extends State<BookingScreen> {
               decoration: const InputDecoration(labelText: 'Select stylist'),
               items: _stylists
                   .map((stylist) => DropdownMenuItem(
-                        value: stylist,
-                        child: Text(stylist),
-                      ))
+                value: stylist,
+                child: Text(stylist),
+              ))
                   .toList(),
               onChanged: (value) {
                 if (value != null) {
@@ -114,9 +121,9 @@ class _BookingScreenState extends State<BookingScreen> {
               decoration: const InputDecoration(labelText: 'Select time'),
               items: _timeSlots
                   .map((slot) => DropdownMenuItem(
-                        value: slot,
-                        child: Text(slot),
-                      ))
+                value: slot,
+                child: Text(slot),
+              ))
                   .toList(),
               onChanged: (value) {
                 if (value != null) {

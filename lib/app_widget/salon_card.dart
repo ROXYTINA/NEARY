@@ -25,6 +25,9 @@ class SalonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -33,10 +36,10 @@ class SalonCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: AppColors.divider, width: 1),
+          border: Border.all(color: scheme.outline, width: 1),
           boxShadow: [
             BoxShadow(
-              color: AppColors.roseDark.withValues(alpha: 0.06),
+              color: scheme.primary.withValues(alpha: isDark ? 0.03 : 0.06),
               blurRadius: 16,
               offset: const Offset(0, 4),
             ),
@@ -46,7 +49,7 @@ class SalonCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // Hero image
+            // ── Hero image ──────────────────────────────────
             Stack(
               children: [
                 Hero(
@@ -98,9 +101,9 @@ class SalonCard extends StatelessWidget {
                       width: 36,
                       height: 36,
                       decoration: BoxDecoration(
-                            color: isFav
-                            ? AppColors.rosePrimary
-                            : Colors.white.withValues(alpha: 0.9),
+                        color: isFav
+                            ? scheme.primary
+                            : scheme.surface.withValues(alpha: 0.9),
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
@@ -109,11 +112,10 @@ class SalonCard extends StatelessWidget {
                           ),
                         ],
                       ),
-
                       child: Icon(
                         isFav ? Icons.favorite : Icons.favorite_border,
                         size: 18,
-                        color: isFav ? Colors.white : AppColors.rosePrimary,
+                        color: isFav ? Colors.white : scheme.primary,
                       ),
                     ),
                   ),
@@ -121,58 +123,80 @@ class SalonCard extends StatelessWidget {
               ],
             ),
 
-            // Info
+            // ── Info ────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.all(14),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(salon.name,
-                      style: AppTextStyles.displaySm
-                          .copyWith(fontSize: compact ? 16 : 20),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    salon.name,
+                    style: AppTextStyles.displaySm.copyWith(
+                      fontSize: compact ? 16 : 20,
+                      color: scheme.onSurface,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 2),
-                  Text(salon.tagline,
-                      style: AppTextStyles.caption,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis),
+                  Text(
+                    salon.tagline,
+                    style: AppTextStyles.caption.copyWith(
+                      color: scheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: 8),
                   Row(
                     children: [
                       RatingBarIndicator(
                         rating: salon.rating,
                         itemBuilder: (_, __) =>
-                        const Icon(Icons.star, color: AppColors.goldMid),
+                            Icon(Icons.star, color: isDark ? AppColors.darkGold : AppColors.goldMid),
                         itemCount: 5,
                         itemSize: 14,
                       ),
                       const SizedBox(width: 6),
-                      Text('${salon.rating}',
-                          style: AppTextStyles.labelMd
-                              .copyWith(color: AppColors.goldDeep)),
+                      Text(
+                        '${salon.rating}',
+                        style: AppTextStyles.labelMd.copyWith(
+                          color: isDark ? AppColors.darkGold : AppColors.goldDeep,
+                        ),
+                      ),
                       const SizedBox(width: 4),
-                      Text('(${salon.reviewCount})',
-                          style: AppTextStyles.caption),
+                      Text(
+                        '(${salon.reviewCount})',
+                        style: AppTextStyles.caption.copyWith(
+                          color: scheme.onSurface.withValues(alpha: 0.5),
+                        ),
+                      ),
                     ],
                   ),
                   if (!compact) ...[
                     const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 14, color: AppColors.warmGrey),
+                        Icon(Icons.location_on_outlined,
+                            size: 14, color: scheme.onSurface.withValues(alpha: 0.5)),
                         const SizedBox(width: 4),
                         Expanded(
-                          child: Text(salon.address,
-                              style: AppTextStyles.caption,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis),
+                          child: Text(
+                            salon.address,
+                            style: AppTextStyles.caption.copyWith(
+                              color: scheme.onSurface.withValues(alpha: 0.6),
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                         const SizedBox(width: 8),
-                        Text('${salon.distance}km',
-                            style: AppTextStyles.labelSm
-                                .copyWith(color: AppColors.rosePrimary)),
+                        Text(
+                          '${salon.distance}km',
+                          style: AppTextStyles.labelSm.copyWith(
+                            color: scheme.primary,
+                          ),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 8),
@@ -201,13 +225,19 @@ class _CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.roseLight,
+        color: scheme.primaryContainer,
         borderRadius: BorderRadius.circular(20),
       ),
-      child: Text(label, style: AppTextStyles.labelSm),
+      child: Text(
+        label,
+        style: AppTextStyles.labelSm.copyWith(
+          color: scheme.onPrimaryContainer,
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,5 @@
-// ============================================================
-// main.dart
-// ============================================================
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +10,9 @@ import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // final cacheManager = DefaultCacheManager();
+  // await cacheManager.emptyCache();
   await MockRepository.instance.init();
 
   final onboarding = OnboardingNotifier();
@@ -27,6 +29,7 @@ void main() async {
   await favorites.load();
   await favorites.rehydrate(apiSettings.baseUrl);
 
+
   runApp(
     MultiProvider(
       providers: [
@@ -42,3 +45,7 @@ void main() async {
     ),
   );
 }
+
+// class DefaultCacheManager {
+//   Future<void> emptyCache() async {}
+// }

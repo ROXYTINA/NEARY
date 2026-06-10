@@ -18,6 +18,8 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       body: widget.child,
       bottomNavigationBar: BottomNavigationBar(
@@ -26,6 +28,13 @@ class _MainShellState extends State<MainShell> {
           setState(() => _currentIndex = i);
           GoRouter.of(context).go(_routes[i]);
         },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: isDark ? AppColors.charcoal : Colors.white,
+        selectedItemColor: AppColors.rosePrimary,
+        unselectedItemColor: isDark ? Colors.white54 : Colors.black38,
+        selectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600),
+        unselectedLabelStyle: const TextStyle(fontSize: 10, fontWeight: FontWeight.w400),
+        elevation: 0,
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Home'),
           BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), label: 'Favorites'),
@@ -36,4 +45,3 @@ class _MainShellState extends State<MainShell> {
     );
   }
 }
-

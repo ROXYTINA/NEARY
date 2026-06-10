@@ -6,7 +6,8 @@ class ApiSettingsNotifier extends ChangeNotifier {
   static const _baseUrlKey = 'api_base_url';
   
   // Default IP for backend (Real backend at /api/)
-  String _baseUrl = 'http://127.0.0.1:8000';
+
+   String _baseUrl = 'http://10.203.11.6:8000';
 
   String get baseUrl => _baseUrl;
 
