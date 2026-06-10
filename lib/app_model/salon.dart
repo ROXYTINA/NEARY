@@ -1,3 +1,5 @@
+import 'package:flutter/cupertino.dart';
+
 class Salon {
   final String id;
   final String name;
@@ -14,8 +16,8 @@ class Salon {
   final String openTime;
   final String closeTime;
   final bool isOpen;
-  final double distance; // km (mock)
-  final String priceRange; // $, $$, $$$
+  final double distance;
+  final String priceRange;
   final List<String> serviceIds;
   final String phone;
   final String description;
@@ -43,30 +45,33 @@ class Salon {
     required this.description,
   });
 
-  factory Salon.fromJson(Map<String, dynamic> j) => Salon(
-    id: j['id']?.toString() ?? '',
-    name: j['name'] ?? 'Unknown Salon',
-    tagline: j['tagline'] ?? '',
-    address: j['address'] ?? '',
-    city: j['city'] ?? '',
-    lat: (j['latitude'] as num? ?? 0.0).toDouble(),
-    lng: (j['longitude'] as num? ?? 0.0).toDouble(),
-    rating: (j['rating'] as num? ?? 0.0).toDouble(),
-    reviewCount: j['reviewCount'] ?? 0,
-    coverImage: j['coverImage'] ?? '',
-    images: (j['images'] is List)
-        ? List<String>.from(j['images'])
-        : [],
-    categories: List<String>.from(j['categories'] ?? []),
-    openTime: j['openTime'] ?? '09:00',
-    closeTime: j['closeTime'] ?? '20:00',
-    isOpen: j['isOpen'] ?? true,
-    distance: (j['distance'] as num? ?? 0.0).toDouble(),
-    priceRange: j['priceRange'] ?? '\$\$',
-    serviceIds: List<String>.from(j['serviceIds'] ?? []),
-    phone: j['phone'] ?? '',
-    description: j['description'] ?? '',
-  );
+  factory Salon.fromJson(Map<String, dynamic> j) {
+    return Salon(
+      id:          j['id']?.toString() ?? '',
+      name:        j['name'] ?? 'Unknown Salon',
+      tagline:     j['tagline'] ?? '',
+      address:     j['address'] ?? '',
+      city:        j['city'] ?? '',
+      lat:         (j['latitude']  as num? ?? 0.0).toDouble(),
+      lng:         (j['longitude'] as num? ?? 0.0).toDouble(),
+      rating:      (j['rating']    as num? ?? 0.0).toDouble(),
+      reviewCount: j['review_count'] ?? 0,
+      coverImage: j['cover_image'] ?? j['coverImage'] ??
+          ((j['images'] is List && (j['images'] as List).isNotEmpty)
+              ? j['images'][0]
+              : ''),
+      images:      (j['images'] is List) ? List<String>.from(j['images']) : [],
+      categories:  List<String>.from(j['categories'] ?? []),
+      openTime:    j['open_time']  ?? '09:00',
+      closeTime:   j['close_time'] ?? '20:00',
+      isOpen:      j['is_open']    ?? true,
+      distance:    (j['distance']  as num? ?? 0.0).toDouble(),
+      priceRange:  j['price_range'] ?? '\$\$',
+      serviceIds:  List<String>.from(j['service_ids'] ?? []),
+      phone:       j['phone'] ?? '',
+      description: j['description'] ?? '',
+    );
+  }
 
   Map<String, dynamic> toJson() => {
     'id': id,

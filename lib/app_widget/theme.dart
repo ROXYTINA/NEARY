@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../app_state/notifiers.dart';
@@ -14,21 +15,21 @@ class ThemeSelector extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardColor,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.divider),
+        // border: Border.all(color: AppColors.divider),
       ),
       child: Row(
         children: [
           _ThemeOption(
-            icon: Icons.light_mode,
-            label: 'Light',
-            selected: theme.isLight,
-            onTap: () => theme.setMode(ThemeMode.light),
-          ),
-          _ThemeOption(
             icon: Icons.brightness_auto,
-            label: 'Auto',
+            label: 'AUTO',
             selected: theme.isSystem,
             onTap: () => theme.setMode(ThemeMode.system),
+          ),
+          _ThemeOption(
+            icon: Icons.light_mode,
+            label: 'GIRLY',
+            selected: theme.isLight,
+            onTap: () => theme.setMode(ThemeMode.light),
           ),
           _ThemeOption(
             icon: Icons.dark_mode,

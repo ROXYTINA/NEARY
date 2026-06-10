@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -33,7 +34,6 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _apiError;
 
   final _categories = ['All', 'Hair', 'Nails', 'Makeup', 'Spa', 'Bridal'];
-  final _repo = MockRepository.instance;
 
   final _bannerImages = [
     'https://i.pinimg.com/736x/30/28/c8/3028c897d22592831a12a2647aa6537d.jpg',
@@ -43,10 +43,10 @@ class _HomeScreenState extends State<HomeScreen> {
   ];
 
   final _bannerTitles = [
-    'Jg Sart Men?? \n MOS!',
-    'TOS tv SPA',
+    'Look Good,\nFeel Amazing',
+    'Unwind at\nOur Spas',
     'Makeup Artistry\nAt Its Finest',
-    'Relax & Rejuvenate\nWith Our Spas',
+    'Relax &\nRejuvenate',
   ];
 
   @override
@@ -66,19 +66,12 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchRemoteSalons() async {
     final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
-    setState(() {
-      _isLoading = true;
-      _apiError = null;
-    });
-    final api = ApiService(baseUrl);
-    final results = await api.getSalons();
+    setState(() { _isLoading = true; _apiError = null; });
+    final results = await ApiService(baseUrl).getSalons();
     if (mounted) {
       setState(() {
-        if (results.isNotEmpty) {
-          _remoteSalons = results;
-        } else {
-          _apiError = "No salons returned from API";
-        }
+        _remoteSalons = results.isNotEmpty ? results : null;
+        _apiError = results.isEmpty ? 'Could not load salons' : null;
         _isLoading = false;
       });
     }
@@ -87,54 +80,60 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final favs = context.watch<FavoritesNotifier>();
-    
-    // Logic: Use server data if available, otherwise show empty or error
     final sourceSalons = _remoteSalons ?? [];
-    
-    // If we have no remote salons and no error yet, and we aren't loading, 
-    // we might want to show mocks ONLY if the server didn't respond at all.
-    // But per instructions "dont fallback pls", I will stick to remote or empty.
-    
     final salons = _searchQuery.isNotEmpty
-        ? sourceSalons.where((s) => s.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList()
-        : _selectedCategory == 'All' 
-            ? sourceSalons 
-            : sourceSalons.where((s) => s.categories.contains(_selectedCategory)).toList();
+        ? sourceSalons.where((s) =>
+        s.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList()
+        : _selectedCategory == 'All'
+        ? sourceSalons
+        : sourceSalons
+        .where((s) => s.categories.contains(_selectedCategory))
+        .toList();
 
     final promos = _promos.take(3).toList();
 
     return Scaffold(
-      floatingActionButton: _apiError != null ? FloatingActionButton.extended(
-        backgroundColor: Colors.amber,
-        onPressed: _fetchRemoteSalons,
-        label: const Text('API Error - Tap to Retry', style: TextStyle(color: Colors.black)),
-        icon: const Icon(Icons.refresh, color: Colors.black),
-      ) : null,
       body: CustomScrollView(
         slivers: [
 
-          // App bar
+          // ── App Bar ───────────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 0,
             floating: true,
             snap: true,
-            title: Row(
-              children: [
-                Text('Neary',
+            elevation: 0,
+            titleSpacing: 20,
+            title: RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'Neary',
                     style: AppTextStyles.displaySm.copyWith(
-                        color: Theme.of(context).colorScheme.onSurface)),
-              ],
+                      color: AppColors.rosePrimary,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '.',
+                    style: AppTextStyles.displaySm.copyWith(
+                      color: AppColors.goldAccent,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
             ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.calendar_today_outlined),
+                icon: const Icon(Icons.calendar_today_outlined, size: 22),
                 onPressed: () => context.go('/my-bookings'),
                 tooltip: 'My Bookings',
               ),
               IconButton(
-                icon: const Icon(Icons.settings_outlined),
+                icon: const Icon(Icons.settings_outlined, size: 22),
                 onPressed: () => context.go('/settings'),
               ),
+              const SizedBox(width: 4),
             ],
           ),
 
@@ -142,24 +141,25 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero Carousel
-                _buildCarousel(),
-                const SizedBox(height: 20),
 
-                // Search bar
+                // ── Hero carousel ────────────────────────────────────
+                _buildCarousel(),
+                const SizedBox(height: 24),
+
+                // ── Search bar ───────────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (v) => setState(() => _searchQuery = v),
                     decoration: InputDecoration(
-                      hintText: 'Search salons, services...',
+                      hintText: 'Search salons or services...',
                       prefixIcon: const Icon(Icons.search_outlined,
-                          color: AppColors.warmGrey),
+                          color: AppColors.warmGrey, size: 20),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
                         icon: const Icon(Icons.clear,
-                            color: AppColors.warmGrey),
+                            color: AppColors.warmGrey, size: 18),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -169,37 +169,39 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 24),
 
-                // Category chips
+                // ── Categories ───────────────────────────────────────
                 if (_searchQuery.isEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Categories', style: AppTextStyles.displaySm),
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Text('Browse by Category',
+                        style: AppTextStyles.displaySm),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 14),
                   _buildCategoryChips(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 24),
                 ],
 
-                // Promotions strip
-                if (_searchQuery.isEmpty) ...[
+                // ── Promotions ───────────────────────────────────────
+                if (_searchQuery.isEmpty && promos.isNotEmpty) ...[
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: SectionHeader(
+                    child: _SectionHeader(
                       title: 'Current Offers',
                       subtitle: 'Limited time deals',
                       onSeeAll: () => context.go('/promotions'),
                     ),
                   ),
+                  const SizedBox(height: 12),
                   _buildPromoStrip(promos),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 24),
                 ],
 
-                // Featured / Search Results
+                // ── Salon list header ────────────────────────────────
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SectionHeader(
+                  child: _SectionHeader(
                     title: _searchQuery.isNotEmpty
                         ? 'Search Results'
                         : _selectedCategory == 'All'
@@ -211,28 +213,52 @@ class _HomeScreenState extends State<HomeScreen> {
                     onSeeAll: () => context.go('/nearby'),
                   ),
                 ),
+                const SizedBox(height: 12),
 
-                // Salon list
-                if (salons.isEmpty)
-                  const EmptyState(
-                    icon: Icons.search_off,
-                    title: 'No salons found',
-                    message: 'Try a different search or category.',
+                // ── Salon list ───────────────────────────────────────
+                if (_isLoading)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: Center(child: CircularProgressIndicator()),
                   )
-                else
+                else if (_apiError != null && salons.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Column(
-                      children: salons
-                          .map((s) => SalonCard(
-                        salon: s,
-                        isFav: favs.isSalonFav(s.id),
-                        onFav: () => favs.toggleSalon(s),
-                        onTap: () => context.push('/salon/${s.id}'),
-                      ))
-                          .toList(),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 16, vertical: 32),
+                    child: _ErrorCard(
+                      message: _apiError!,
+                      onRetry: _fetchRemoteSalons,
                     ),
-                  ),
+                  )
+                else if (salons.isEmpty)
+                    const Padding(
+                      padding: EdgeInsets.symmetric(vertical: 48),
+                      child: Center(
+                        child: Column(
+                          children: [
+                            Icon(Icons.search_off,
+                                size: 48, color: AppColors.softGrey),
+                            SizedBox(height: 12),
+                            Text('No salons found',
+                                style: TextStyle(color: AppColors.warmGrey)),
+                          ],
+                        ),
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Column(
+                        children: salons
+                            .map((s) => SalonCard(
+                          salon: s,
+                          isFav: favs.isSalonFav(s.id),
+                          onFav: () => favs.toggleSalon(s),
+                          onTap: () => context.push('/salon/${s.id}'),
+                        ))
+                            .toList(),
+                      ),
+                    ),
 
                 const SizedBox(height: 100),
               ],
@@ -243,15 +269,15 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Carousel ─────────────────────────────────────────────────────
   Widget _buildCarousel() {
     return Column(
       children: [
         CarouselSlider.builder(
           itemCount: _bannerImages.length,
           options: CarouselOptions(
-            height: 220,
+            height: 210,
             viewportFraction: 1.0,
-            enlargeCenterPage: false,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 4),
             autoPlayCurve: Curves.easeInOut,
@@ -263,55 +289,61 @@ class _HomeScreenState extends State<HomeScreen> {
               CachedNetworkImage(
                 imageUrl: _bannerImages[i],
                 fit: BoxFit.cover,
-                placeholder: (_, __) => Container(
-                  color: AppColors.roseLight,
-                  alignment: Alignment.center,
-                  child: const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  color: AppColors.roseLight,
-                  alignment: Alignment.center,
-                  child: const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                ),
+                placeholder: (_, __) =>
+                    Container(color: AppColors.roseLight),
+                errorWidget: (_, __, ___) =>
+                    Container(color: AppColors.roseLight),
               ),
+              // gradient: left-heavy for text legibility
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [Color(0x99000000), Colors.transparent],
+                    colors: [Color(0xCC000000), Colors.transparent],
+                    stops: [0.0, 0.65],
                   ),
                 ),
               ),
+              // bottom fade
+              Container(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Color(0x88000000), Colors.transparent],
+                    stops: [0.0, 0.5],
+                  ),
+                ),
+              ),
+              // text
               Positioned(
-                bottom: 30,
+                bottom: 28,
                 left: 24,
+                right: 120,
                 child: Text(
                   _bannerTitles[i],
-                  style: AppTextStyles.displaySm.copyWith(
-                      color: Colors.white, fontSize: 28),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 26,
+                    fontWeight: FontWeight.w800,
+                    height: 1.2,
+                    letterSpacing: -0.3,
+                  ),
                 ),
               ),
             ],
           ),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 10),
         AnimatedSmoothIndicator(
           activeIndex: _carouselIndex,
           count: _bannerImages.length,
-          effect: ExpandingDotsEffect(
+          effect: const ExpandingDotsEffect(
             dotColor: AppColors.roseMid,
             activeDotColor: AppColors.rosePrimary,
-            dotHeight: 6,
-            dotWidth: 6,
+            dotHeight: 5,
+            dotWidth: 5,
             expansionFactor: 3,
           ),
         ),
@@ -319,9 +351,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Category chips ───────────────────────────────────────────────
   Widget _buildCategoryChips() {
     return SizedBox(
-      height: 90,
+      height: 88,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -333,34 +366,44 @@ class _HomeScreenState extends State<HomeScreen> {
             onTap: () => setState(() => _selectedCategory = cat),
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 12),
+              margin: const EdgeInsets.only(right: 14),
               child: Column(
                 children: [
-                  Container(
-                    width: 56,
-                    height: 56,
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: 54,
+                    height: 54,
                     decoration: BoxDecoration(
                       color: isSelected
                           ? AppColors.rosePrimary
                           : AppColors.roseLight,
                       shape: BoxShape.circle,
-                      border: isSelected
-                          ? Border.all(
-                          color: AppColors.rosePrimary, width: 2)
+                      boxShadow: isSelected
+                          ? [
+                        BoxShadow(
+                          color:
+                          AppColors.rosePrimary.withOpacity(0.35),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        )
+                      ]
                           : null,
                     ),
                     child: Icon(
                       _categoryIcon(cat),
-                      color: isSelected
-                          ? Colors.white
-                          : AppColors.roseDark,
-                      size: 24,
+                      color:
+                      isSelected ? Colors.white : AppColors.roseDark,
+                      size: 22,
                     ),
                   ),
                   const SizedBox(height: 6),
                   Text(
                     cat,
-                    style: AppTextStyles.labelSm.copyWith(
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       color: isSelected
                           ? AppColors.rosePrimary
                           : AppColors.warmGrey,
@@ -375,9 +418,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // ── Promo strip ──────────────────────────────────────────────────
   Widget _buildPromoStrip(List<Promotion> promos) {
     return SizedBox(
-      height: 100,
+      height: 110,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -387,79 +431,69 @@ class _HomeScreenState extends State<HomeScreen> {
           return GestureDetector(
             onTap: () => context.go('/promotions'),
             child: Container(
-              width: 220,
+              width: 230,
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.rosePrimary.withValues(alpha: 0.8),
-                    AppColors.goldAccent.withValues(alpha: 0.8),
-                  ],
+                gradient: const LinearGradient(
+                  colors: [AppColors.rosePrimary, AppColors.goldAccent],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
               ),
-              child: Stack(
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: CachedNetworkImage(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Stack(
+                  children: [
+                    CachedNetworkImage(
                       imageUrl: p.image,
                       width: double.infinity,
                       height: double.infinity,
                       fit: BoxFit.cover,
-                      color: Colors.black38,
+                      color: Colors.black45,
                       colorBlendMode: BlendMode.darken,
-                      placeholder: (_, __) => Container(
-                        color: AppColors.roseLight,
-                        alignment: Alignment.center,
-                        child: const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (_, __, ___) => Container(
-                        color: AppColors.roseLight,
-                        alignment: Alignment.center,
-                        child: const SizedBox(
-                          width: 24,
-                          height: 24,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
+                      placeholder: (_, __) =>
+                          Container(color: AppColors.roseDark),
+                      errorWidget: (_, __, ___) =>
+                          Container(color: AppColors.roseDark),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(14),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.goldMid,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              '${p.discountPercent}% OFF',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.charcoal,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            p.title,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(14),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: AppColors.goldMid,
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            '${p.discountPercent}% OFF',
-                            style: AppTextStyles.labelSm
-                                .copyWith(color: AppColors.charcoal),
-                          ),
-                        ),
-                        Text(
-                          p.title,
-                          style: AppTextStyles.bodyMd.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          maxLines: 2,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           );
@@ -483,5 +517,99 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _searchController.dispose();
     super.dispose();
+  }
+}
+
+// ── Section header ────────────────────────────────────────────────────
+class _SectionHeader extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final VoidCallback? onSeeAll;
+
+  const _SectionHeader({
+    required this.title,
+    this.subtitle,
+    this.onSeeAll,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title, style: AppTextStyles.displaySm),
+              if (subtitle != null)
+                Text(subtitle!,
+                    style: AppTextStyles.caption
+                        .copyWith(color: AppColors.warmGrey)),
+            ],
+          ),
+        ),
+        if (onSeeAll != null)
+          GestureDetector(
+            onTap: onSeeAll,
+            child: Text(
+              'See all',
+              style: AppTextStyles.labelMd.copyWith(
+                color: AppColors.rosePrimary,
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Error card ────────────────────────────────────────────────────────
+class _ErrorCard extends StatelessWidget {
+  final String message;
+  final VoidCallback onRetry;
+
+  const _ErrorCard({required this.message, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.error.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.error.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          const Icon(Icons.wifi_off_rounded,
+              size: 36, color: AppColors.error),
+          const SizedBox(height: 10),
+          Text(
+            'Couldn\'t load salons',
+            style: AppTextStyles.labelLg.copyWith(color: AppColors.error),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Check your connection and try again.',
+            style:
+            AppTextStyles.caption.copyWith(color: AppColors.warmGrey),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: 14),
+          OutlinedButton.icon(
+            onPressed: onRetry,
+            icon: const Icon(Icons.refresh, size: 16),
+            label: const Text('Retry'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppColors.rosePrimary,
+              side: const BorderSide(color: AppColors.rosePrimary),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20)),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

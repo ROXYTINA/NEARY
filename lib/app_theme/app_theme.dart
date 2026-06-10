@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'app_colors.dart';
 import 'app_text_styles.dart';
@@ -10,7 +11,7 @@ class AppTheme {
     useMaterial3: true,
     brightness: Brightness.light,
     fontFamily: 'Jost',
-    scaffoldBackgroundColor: AppColors.cream,
+    scaffoldBackgroundColor: AppColors.creamDark,
     colorScheme: const ColorScheme.light(
       primary: AppColors.rosePrimary,
       onPrimary: Colors.white,
@@ -26,6 +27,7 @@ class AppTheme {
       error: AppColors.error,
       outline: AppColors.divider,
     ),
+
     textTheme: _textTheme(AppColors.charcoal, AppColors.warmGrey),
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.cream,
@@ -36,8 +38,9 @@ class AppTheme {
       titleTextStyle: AppTextStyles.displaySm,
       iconTheme: IconThemeData(color: AppColors.charcoal),
     ),
+
     cardTheme: CardThemeData(
-      color: AppColors.blushWhite,
+      color: Colors.white, // pure white instead of blushWhite
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(16),
@@ -72,6 +75,7 @@ class AppTheme {
         textStyle: AppTextStyles.labelLg,
       ),
     ),
+
     chipTheme: ChipThemeData(
       backgroundColor: AppColors.roseLight,
       selectedColor: AppColors.rosePrimary,
@@ -158,6 +162,8 @@ class AppTheme {
           : AppColors.divider),
     ),
   );
+
+
 
   // ── Dark Theme ────────────────────────────────────────────
   static ThemeData get darkTheme => ThemeData(
@@ -315,6 +321,7 @@ class AppTheme {
       backgroundColor: AppColors.darkSurface,
     ),
   );
+
 
   // ── Shared Text Theme ─────────────────────────────────────
   static TextTheme _textTheme(Color primary, Color secondary) => TextTheme(

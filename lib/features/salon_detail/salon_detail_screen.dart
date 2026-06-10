@@ -1,3 +1,4 @@
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -8,12 +9,11 @@ import 'package:salon_beauty_app/app_model/service.dart';
 import 'package:salon_beauty_app/app_model/stylist.dart';
 import 'package:salon_beauty_app/app_model/review.dart';
 import 'package:salon_beauty_app/app_state/api_settings.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 
 import '../../app_state/notifiers.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
+import '../../app_widget/Review_card.dart';
 import '../../app_widget/common_widget.dart';
 
 class SalonDetailScreen extends StatefulWidget {
@@ -77,7 +77,6 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
 
     if (salon == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Salon')),
         body: Center(
           child: _isLoading
               ? const CircularProgressIndicator()
@@ -87,180 +86,259 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
     }
 
     final isFav = favorites.isSalonFav(salon.id);
+    final coverUrl = salon.coverImage.isNotEmpty
+        ? salon.coverImage
+        : (salon.images.isNotEmpty ? salon.images[0] : '');
 
     return Scaffold(
+      extendBodyBehindAppBar: true,
+
       body: CustomScrollView(
         slivers: [
 
-          // ── Hero AppBar ─────────────────────────────────────────
-
+          // ── Hero AppBar ──────────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 240,
+            expandedHeight: 280,
             pinned: true,
+            stretch: true,
+            backgroundColor: AppColors.rosePrimary,
+            leading: Padding(
+              padding: const EdgeInsets.all(8),
+              child: CircleAvatar(
+                backgroundColor: Colors.black26,
+                child: IconButton(
+                  icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
+                  onPressed: () => context.pop(),
+                ),
+              ),
+            ),
+            actions: [
+              Padding(
+                padding: const EdgeInsets.all(8),
+                child: CircleAvatar(
+                  backgroundColor: Colors.black26,
+                  child: IconButton(
+                    icon: Icon(
+                      isFav ? Icons.favorite : Icons.favorite_border,
+                      color: isFav ? Colors.pinkAccent : Colors.white,
+                      size: 20,
+                    ),
+                    onPressed: () => favorites.toggleSalon(salon),
+                  ),
+                ),
+              ),
+            ],
             flexibleSpace: FlexibleSpaceBar(
+              stretchModes: const [StretchMode.zoomBackground],
               background: Stack(
                 fit: StackFit.expand,
                 children: [
-                  PageView.builder(
-                    itemCount: salon.images.isNotEmpty
-                        ? salon.images.length
-                        : 1,
-                    itemBuilder: (context, index) {
-                      final image = salon.images.isNotEmpty
-                          ? salon.images[index]
-                          : salon.coverImage;
+                  // Cover image
+                  coverUrl.isNotEmpty
+                      ? CachedNetworkImage(
+                    imageUrl: coverUrl,
+                    fit: BoxFit.cover,
+                    placeholder: (_, __) =>
+                        Container(color: AppColors.roseLight),
+                    errorWidget: (_, __, ___) =>
+                        Container(color: AppColors.roseLight),
+                  )
+                      : Container(color: AppColors.roseLight),
 
-                      return CachedNetworkImage(
-                        imageUrl: image,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  ),
-
-                  // dark gradient overlay
+                  // Gradient overlay — stronger at bottom for text legibility
                   Container(
                     decoration: const BoxDecoration(
                       gradient: LinearGradient(
-                        begin: Alignment.bottomCenter,
-                        end: Alignment.topCenter,
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
                         colors: [
-                          Colors.black54,
                           Colors.transparent,
+                          Colors.transparent,
+                          Colors.black45,
+                          Colors.black87,
                         ],
+                        stops: [0.0, 0.4, 0.75, 1.0],
                       ),
+                    ),
+                  ),
+
+                  // Salon name + tagline pinned to bottom of hero
+                  Positioned(
+                    left: 20,
+                    right: 20,
+                    bottom: 20,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          salon.name,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                        if (salon.tagline.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            salon.tagline,
+                            style: TextStyle(
+                              color: Colors.white.withOpacity(0.85),
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-            actions: [
-              IconButton(
-                icon: Icon(
-                  isFav ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.white,
-                ),
-                onPressed: () => favorites.toggleSalon(salon),
-              ),
-            ],
           ),
 
+          // ── Info strip ──────────────────────────────────────────
           SliverToBoxAdapter(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+            child: Container(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
 
-                // ── Salon Info ─────────────────────────────────────
-                Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(salon.name, style: AppTextStyles.heroDisplay),
-                      const SizedBox(height: 4),
-                      Text(salon.tagline, style: AppTextStyles.caption),
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          const Icon(Icons.star,
-                              color: AppColors.goldMid, size: 18),
-                          const SizedBox(width: 4),
-                          Text(
-                            '${salon.rating} (${salon.reviewCount} reviews)',
-                            style: AppTextStyles.labelMd,
+                  // Quick stats row
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+                    child: Row(
+                      children: [
+                        // Rating
+                        _StatChip(
+                          icon: Icons.star_rounded,
+                          iconColor: AppColors.goldMid,
+                          label:
+                          '${salon.rating}  (${salon.reviewCount})',
+                        ),
+                        const SizedBox(width: 10),
+
+                        // Open/closed
+                        _StatChip(
+                          icon: Icons.circle,
+                          iconColor: salon.isOpen
+                              ? AppColors.success
+                              : AppColors.error,
+                          label: salon.isOpen ? 'Open now' : 'Closed',
+                        ),
+                        const SizedBox(width: 10),
+
+                        // Price range
+                        if (salon.priceRange.isNotEmpty)
+                          _StatChip(
+                            icon: Icons.attach_money,
+                            iconColor: AppColors.goldAccent,
+                            label: salon.priceRange,
                           ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: salon.isOpen
-                                  ? AppColors.success
-                                  : AppColors.error,
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              salon.isOpen ? 'Open' : 'Closed',
-                              style: const TextStyle(
-                                  color: Colors.white, fontSize: 12),
-                            ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Address
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.location_on_outlined,
+                            size: 15, color: AppColors.warmGrey),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(salon.address,
+                              style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
+
+                  // Phone
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.phone_outlined,
+                            size: 15, color: AppColors.warmGrey),
+                        const SizedBox(width: 6),
+                        Expanded(
+                          child: Text(salon.phone,
+                              style: AppTextStyles.caption,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // Category chips
+                  if (salon.categories.isNotEmpty)
+                    SizedBox(
+                      height: 30,
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        scrollDirection: Axis.horizontal,
+                        itemCount: salon.categories.length,
+                        separatorBuilder: (_, __) =>
+                        const SizedBox(width: 8),
+                        itemBuilder: (_, i) => Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.roseLight,
+                            borderRadius: BorderRadius.circular(20),
                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      InkWell(
-                        onTap: () async {
-                          final url = Uri.parse(
-                            'https://www.google.com/maps/search/?api=1&query=${salon.lat},${salon.lng}',
-                          );
-                          if (await canLaunchUrl(url)) {
-                            await launchUrl(url, mode: LaunchMode.externalApplication);
-                          } else {
-                            if (context.mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text('Could not launch Google Maps'),
-                                ),
-                              );
-                            }
-                          }
-                        },
-                        borderRadius: BorderRadius.circular(4),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 4),
-                          child: Row(
-                            children: [
-                              const Icon(Icons.location_on_outlined,
-                                  size: 16, color: AppColors.warmGrey),
-                              const SizedBox(width: 4),
-                              Expanded(
-                                child: Text(
-                                  salon.address,
-                                  style: AppTextStyles.caption.copyWith(
-                                    decoration: TextDecoration.underline,
-                                    color: Theme.of(context).colorScheme.primary,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            salon.categories[i],
+                            style: AppTextStyles.labelSm.copyWith(
+                              color: AppColors.rosePrimary,
+                            ),
                           ),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          const Icon(Icons.phone_outlined,
-                              size: 16, color: AppColors.warmGrey),
-                          const SizedBox(width: 4),
-                          Text(salon.phone, style: AppTextStyles.caption),
-                        ],
-                      ),
+                    ),
+
+                  const SizedBox(height: 16),
+                  const Divider(height: 1),
+
+                  // Tabs
+                  TabBar(
+                    controller: _tabController,
+                    isScrollable: false,
+                    labelStyle: AppTextStyles.labelMd,
+                    tabs: const [
+                      Tab(text: 'Services'),
+                      Tab(text: 'Stylists'),
+                      Tab(text: 'Reviews'),
+                      Tab(text: 'Gallery'),
                     ],
                   ),
-                ),
-
-                const Divider(thickness: 1),
-
-                // ── Tabs ───────────────────────────────────────────
-                TabBar(
-                  controller: _tabController,
-                  tabs: const [
-                    Tab(text: 'Services'),
-                    Tab(text: 'Stylists'),
-                    Tab(text: 'Reviews'),
-                    Tab(text: 'Gallery'),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
 
-          // ── Tab Content ──────────────────────────────────────────
+          // ── Tab content ─────────────────────────────────────────
           SliverFillRemaining(
             child: TabBarView(
               controller: _tabController,
               children: [
-                // Services Tab
-                ListView.builder(
+
+                // ── Services ──────────────────────────────────────
+                _services.isEmpty
+                    ? const Center(child: Text('No services available'))
+                    : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _services.length,
                   itemBuilder: (_, i) {
@@ -268,128 +346,52 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                     return ServiceCard(
                       service: svc,
                       isSelected: selectedServiceIds.contains(svc.id),
-                      onTap: () => context.push('/service/${svc.salonId}/${svc.id}'),
+                      onTap: () => context
+                          .push('/service/${svc.salonId}/${svc.id}'),
                     );
                   },
                 ),
 
-                // Stylists Tab
-                GridView.builder(
+                // ── Stylists ──────────────────────────────────────
+                _stylists.isEmpty
+                    ? const Center(child: Text('No stylists listed'))
+                    : GridView.builder(
                   padding: const EdgeInsets.all(16),
                   gridDelegate:
                   const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    childAspectRatio: 0.7,
+                    mainAxisExtent: 220,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
                   ),
                   itemCount: _stylists.length,
                   itemBuilder: (_, i) {
                     final st = _stylists[i];
-                    return Card(
-                      child: InkWell(
-                        onTap: () => booking.selectStylist(st),
-                        child: Padding(
-                          padding: const EdgeInsets.all(12),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              NetworkAvatar(
-                                imageUrl: st.avatar,
-                                radius: 34,
-                                icon: Icons.person,
-                              ),
-                              const SizedBox(height: 8),
-                              Text(st.name,
-                                  style: AppTextStyles.labelLg,
-                                  textAlign: TextAlign.center),
-                              const SizedBox(height: 4),
-                              Text(st.role,
-                                  style: AppTextStyles.caption,
-                                  textAlign: TextAlign.center),
-                              const Spacer(),
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(Icons.star,
-                                      size: 14, color: AppColors.goldMid),
-                                  const SizedBox(width: 4),
-                                  Text(st.rating.toStringAsFixed(1),
-                                      style: AppTextStyles.labelSm),
-                                ],
-                              ),
-                              if (selectedStylistId == st.id) ...[
-                                const SizedBox(height: 6),
-                                const Icon(Icons.check_circle,
-                                    color: AppColors.rosePrimary, size: 20),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ),
+                    return StylistCard(
+                      stylist: st,
+                      isSelected: selectedStylistId == st.id,
+                      onTap: () {
+                        if (selectedStylistId == st.id) {
+                          booking.selectStylist(null);
+                        } else {
+                          booking.selectStylist(st);
+                        }
+                      },
                     );
                   },
                 ),
 
-                // Reviews Tab
+                // ── Reviews ───────────────────────────────────────
                 _reviews.isEmpty
                     ? const Center(child: Text('No reviews yet'))
                     : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _reviews.length,
-                  itemBuilder: (_, i) {
-                    final r = _reviews[i];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: Padding(
-                        padding: const EdgeInsets.all(12),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                        Row(
-                        children: [
-                        NetworkAvatar(
-                        imageUrl: r.userAvatar,
-                          radius: 20,
-                          icon: Icons.person,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                              Text(r.userName,
-                              style: AppTextStyles.labelLg),
-                                Row(
-                                  children: List.generate(
-                                    5,
-                                        (index) => Icon(
-                                      Icons.star,
-                                      size: 14,
-                                      color: index < r.rating.toInt()
-                                          ? AppColors.goldMid
-                                          : AppColors.divider,
-                                    ),
-                                  ),
-                                ),
-                        ],
-                      ),
-                    ),
-                    ],
-                    ),
-                    const SizedBox(height: 8),
-                    Text(r.comment, style: AppTextStyles.bodyMd),
-                    const SizedBox(height: 4),
-                    Text(r.date,
-                    style: AppTextStyles.caption.copyWith(
-                    color: AppColors.warmGrey)),
-                    ],
-                    ),
-                    ),
-                    );
-                  },
+                  itemBuilder: (_, i) =>
+                      ReviewCard(review: _reviews[i]),
                 ),
 
-                // Gallery Tab
+                // ── Gallery ───────────────────────────────────────
                 _galleryImages.isEmpty
                     ? const Center(child: Text('No gallery images'))
                     : GridView.builder(
@@ -402,7 +404,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   ),
                   itemCount: _galleryImages.length,
                   itemBuilder: (_, i) => ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                     child: SafeNetworkImage(
                       imageUrl: _galleryImages[i],
                       fit: BoxFit.cover,
@@ -415,7 +417,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
         ],
       ),
 
-      // ── FAB ───────────────────────────────────────────────────────
+      // ── Book Now FAB ─────────────────────────────────────────────
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           final auth = context.read<AuthNotifier>();
@@ -426,10 +428,13 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
             context.go('/booking/${salon.id}');
           }
         },
-        label: const Text('Book Now'),
-        icon: const Icon(Icons.calendar_today),
+        backgroundColor: AppColors.rosePrimary,
+        foregroundColor: Colors.white,
+        elevation: 4,
+        label: const Text('Book Now',
+            style: TextStyle(fontWeight: FontWeight.w600)),
+        icon: const Icon(Icons.calendar_today_rounded, size: 18),
       ),
-
     );
   }
 
@@ -437,5 +442,38 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
   void dispose() {
     _tabController.dispose();
     super.dispose();
+  }
+}
+
+// ── Small reusable stat chip ─────────────────────────────────────────
+class _StatChip extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+
+  const _StatChip({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.divider),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: iconColor),
+          const SizedBox(width: 4),
+          Text(label, style: AppTextStyles.labelSm),
+        ],
+      ),
+    );
   }
 }

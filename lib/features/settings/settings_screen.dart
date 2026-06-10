@@ -1,9 +1,11 @@
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:salon_beauty_app/app_state/notifiers.dart';
 import '../../app_state/api_settings.dart';
 import '../../app_theme/app_colors.dart';
+import '../../app_theme/app_text_styles.dart';
 import '../../app_widget/theme.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -16,7 +18,19 @@ class SettingsScreen extends StatelessWidget {
     final urlCtrl     = TextEditingController(text: apiSettings.baseUrl);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(
+        title: Text(
+          'Settings',
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => context.go('/home'),
+        ),
+      ),
+
       body: ListView(
         children: [
 
@@ -84,17 +98,17 @@ class SettingsScreen extends StatelessWidget {
                   child: Icon(Icons.person, color: Colors.white, size: 32),
                 ),
                 const SizedBox(width: 16),
-                Expanded(
+                const Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Guest User',
+                      Text('Guest User',
                           style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
                               fontWeight: FontWeight.bold)),
-                      const SizedBox(height: 4),
-                      const Text('Sign in to book appointments',
+                      SizedBox(height: 4),
+                      Text('Sign in to book appointments',
                           style: TextStyle(
                               color: Colors.white70, fontSize: 13)),
                     ],
@@ -150,16 +164,16 @@ class SettingsScreen extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {},
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
                   children: [
-                    const Icon(Icons.dark_mode_outlined, color: AppColors.rosePrimary, size: 20),
-                    const SizedBox(width: 12),
-                    const Expanded(
+                    Icon(Icons.dark_mode_outlined, color: AppColors.rosePrimary, size: 20),
+                    SizedBox(width: 12),
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -171,8 +185,8 @@ class SettingsScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                const SizedBox(height: 12),
-                const ThemeSelector(),
+                SizedBox(height: 12),
+                ThemeSelector(),
               ],
             ),
           ),

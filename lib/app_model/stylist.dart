@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 
 class Stylist {
@@ -20,7 +21,7 @@ class Stylist {
   });
 
   factory Stylist.fromJson(Map<String, dynamic> json) {
-    final rawSkills = json['skills'];
+    final rawSkills = json['specialties'] ?? json['skills']; // support both
 
     return Stylist(
       id: json['id'] ?? '',
@@ -36,4 +37,5 @@ class Stylist {
           : List<String>.from(rawSkills),
     );
   }
+
 }
