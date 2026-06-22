@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -14,6 +13,10 @@ import '../../app_state/api_settings.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
 import '../../app_widget/common_widget.dart';
+
+// ── Responsive helper ─────────────────────────────────────────────────
+bool _isTablet(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 600;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -66,7 +69,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchRemoteSalons() async {
     final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
-    setState(() { _isLoading = true; _apiError = null; });
+    setState(() {
+      _isLoading = true;
+      _apiError = null;
+    });
     final results = await ApiService(baseUrl).getSalons();
     if (mounted) {
       setState(() {
@@ -79,11 +85,15 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final tablet = _isTablet(context);
+    final hPad = tablet ? 24.0 : 16.0;
     final favs = context.watch<FavoritesNotifier>();
     final sourceSalons = _remoteSalons ?? [];
     final salons = _searchQuery.isNotEmpty
-        ? sourceSalons.where((s) =>
-        s.name.toLowerCase().contains(_searchQuery.toLowerCase())).toList()
+        ? sourceSalons
+        .where((s) =>
+        s.name.toLowerCase().contains(_searchQuery.toLowerCase()))
+        .toList()
         : _selectedCategory == 'All'
         ? sourceSalons
         : sourceSalons
@@ -96,19 +106,19 @@ class _HomeScreenState extends State<HomeScreen> {
       body: CustomScrollView(
         slivers: [
 
-          // ── App Bar ───────────────────────────────────────────────
+          // ── App Bar ─────────────────────────────────────────────
           SliverAppBar(
             floating: true,
             snap: true,
             elevation: 0,
-            titleSpacing: 20,
+            titleSpacing: hPad,
             title: RichText(
               text: TextSpan(
                 children: [
                   TextSpan(
                     text: 'Neary',
                     style: AppTextStyles.displaySm.copyWith(
-                      color: AppColors.rosePrimary,
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w800,
                       letterSpacing: -0.5,
                     ),
@@ -142,24 +152,32 @@ class _HomeScreenState extends State<HomeScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
 
-                // ── Hero carousel ────────────────────────────────────
-                _buildCarousel(),
+                // ── Hero carousel ──────────────────────────────────
+                _buildCarousel(tablet),
                 const SizedBox(height: 24),
 
-                // ── Search bar ───────────────────────────────────────
+                // ── Search bar ─────────────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: TextField(
                     controller: _searchController,
                     onChanged: (v) => setState(() => _searchQuery = v),
                     decoration: InputDecoration(
                       hintText: 'Search salons or services...',
-                      prefixIcon: const Icon(Icons.search_outlined,
-                          color: AppColors.warmGrey, size: 20),
+                      prefixIcon: Icon(
+                        Icons.search_outlined,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        size: 20,
+                      ),
                       suffixIcon: _searchQuery.isNotEmpty
                           ? IconButton(
-                        icon: const Icon(Icons.clear,
-                            color: AppColors.warmGrey, size: 18),
+                        icon: Icon(
+                          Icons.clear,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSurfaceVariant,
+                          size: 18,
+                        ),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = '');
@@ -171,22 +189,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 24),
 
-                // ── Categories ───────────────────────────────────────
+                // ── Categories ─────────────────────────────────────
                 if (_searchQuery.isEmpty) ...[
-                  const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    child: Text('Browse by Category',
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: hPad),
+                    child: const Text('Browse by Category',
                         style: AppTextStyles.displaySm),
                   ),
                   const SizedBox(height: 14),
-                  _buildCategoryChips(),
+                  _buildCategoryChips(tablet),
                   const SizedBox(height: 24),
                 ],
 
-                // ── Promotions ───────────────────────────────────────
+                // ── Promotions ─────────────────────────────────────
                 if (_searchQuery.isEmpty && promos.isNotEmpty) ...[
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    padding: EdgeInsets.symmetric(horizontal: hPad),
                     child: _SectionHeader(
                       title: 'Current Offers',
                       subtitle: 'Limited time deals',
@@ -194,13 +212,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildPromoStrip(promos),
+                  _buildPromoStrip(promos, tablet),
                   const SizedBox(height: 24),
                 ],
 
-                // ── Salon list header ────────────────────────────────
+                // ── Salon list header ──────────────────────────────
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: EdgeInsets.symmetric(horizontal: hPad),
                   child: _SectionHeader(
                     title: _searchQuery.isNotEmpty
                         ? 'Search Results'
@@ -215,7 +233,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 12),
 
-                // ── Salon list ───────────────────────────────────────
+                // ── Salon list / grid ──────────────────────────────
                 if (_isLoading)
                   const Padding(
                     padding: EdgeInsets.symmetric(vertical: 48),
@@ -223,41 +241,75 @@ class _HomeScreenState extends State<HomeScreen> {
                   )
                 else if (_apiError != null && salons.isEmpty)
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16, vertical: 32),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: hPad, vertical: 32),
                     child: _ErrorCard(
                       message: _apiError!,
                       onRetry: _fetchRemoteSalons,
                     ),
                   )
                 else if (salons.isEmpty)
-                    const Padding(
-                      padding: EdgeInsets.symmetric(vertical: 48),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 48),
                       child: Center(
                         child: Column(
                           children: [
                             Icon(Icons.search_off,
-                                size: 48, color: AppColors.softGrey),
-                            SizedBox(height: 12),
-                            Text('No salons found',
-                                style: TextStyle(color: AppColors.warmGrey)),
+                                size: 48,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant),
+                            const SizedBox(height: 12),
+                            Text(
+                              'No salons found',
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSurfaceVariant,
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     )
                   else
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16),
-                      child: Column(
+                      padding: EdgeInsets.symmetric(horizontal: hPad),
+
+                      // Tablet: 2-column grid; Phone: single column list
+
+                      child: tablet
+                          ? GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 0,
+                          childAspectRatio: 1.70,
+                        ),
+                        itemCount: salons.length,
+                        itemBuilder: (_, i) => SalonCard(
+                          salon: salons[i],
+                          isFav: favs.isSalonFav(salons[i].id),
+                          onFav: () => favs.toggleSalon(salons[i]),
+                          onTap: () =>
+                              context.push('/salon/${salons[i].id}'),
+                        ),
+                      )
+                          : Column(
                         children: salons
                             .map((s) => SalonCard(
                           salon: s,
                           isFav: favs.isSalonFav(s.id),
                           onFav: () => favs.toggleSalon(s),
-                          onTap: () => context.push('/salon/${s.id}'),
+                          onTap: () =>
+                              context.push('/salon/${s.id}'),
                         ))
                             .toList(),
                       ),
+
                     ),
 
                 const SizedBox(height: 100),
@@ -269,14 +321,17 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Carousel ─────────────────────────────────────────────────────
-  Widget _buildCarousel() {
+  // ── Carousel ───────────────────────────────────────────────────────
+  Widget _buildCarousel(bool tablet) {
+    final carouselHeight = tablet ? 300.0 : 210.0;
+    final textSize = tablet ? 32.0 : 26.0;
+
     return Column(
       children: [
         CarouselSlider.builder(
           itemCount: _bannerImages.length,
           options: CarouselOptions(
-            height: 210,
+            height: carouselHeight,
             viewportFraction: 1.0,
             autoPlay: true,
             autoPlayInterval: const Duration(seconds: 4),
@@ -294,7 +349,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 errorWidget: (_, __, ___) =>
                     Container(color: AppColors.roseLight),
               ),
-              // gradient: left-heavy for text legibility
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -305,7 +359,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // bottom fade
               Container(
                 decoration: const BoxDecoration(
                   gradient: LinearGradient(
@@ -316,16 +369,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              // text
               Positioned(
-                bottom: 28,
-                left: 24,
-                right: 120,
+                bottom: 32,
+                left: tablet ? 40 : 24,
+                right: tablet ? 200 : 120,
                 child: Text(
                   _bannerTitles[i],
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: Colors.white,
-                    fontSize: 26,
+                    fontSize: textSize,
                     fontWeight: FontWeight.w800,
                     height: 1.2,
                     letterSpacing: -0.3,
@@ -339,9 +391,9 @@ class _HomeScreenState extends State<HomeScreen> {
         AnimatedSmoothIndicator(
           activeIndex: _carouselIndex,
           count: _bannerImages.length,
-          effect: const ExpandingDotsEffect(
-            dotColor: AppColors.roseMid,
-            activeDotColor: AppColors.rosePrimary,
+          effect: ExpandingDotsEffect(
+            dotColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            activeDotColor: Theme.of(context).colorScheme.primary,
             dotHeight: 5,
             dotWidth: 5,
             expansionFactor: 3,
@@ -351,87 +403,111 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // ── Category chips ───────────────────────────────────────────────
-  Widget _buildCategoryChips() {
+  // ── Category chips ─────────────────────────────────────────────────
+  Widget _buildCategoryChips(bool tablet) {
+    final chipSize = tablet ? 68.0 : 54.0;
+    final iconSize = tablet ? 28.0 : 22.0;
+
+    final chips = _categories.map((cat) {
+      final isSelected = cat == _selectedCategory;
+      return GestureDetector(
+        onTap: () => setState(() => _selectedCategory = cat),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: chipSize,
+                height: chipSize,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.primaryContainer,
+                  shape: BoxShape.circle,
+                  boxShadow: isSelected
+                      ? [
+                    BoxShadow(
+                      color: Theme.of(context)
+                          .colorScheme
+                          .primary
+                          .withOpacity(0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    )
+                  ]
+                      : null,
+                ),
+                child: Icon(
+                  _categoryIcon(cat),
+                  color: isSelected
+                      ? Colors.white
+                      : Theme.of(context).colorScheme.primary,
+                  size: iconSize,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                cat,
+                style: TextStyle(
+                  fontSize: tablet ? 12 : 11,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+
+    if (tablet) {
+      // Spread evenly across full width on tablet
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: chips,
+        ),
+      );
+    }
+
+    // Scrollable list on phone
     return SizedBox(
       height: 88,
-      child: ListView.builder(
+      child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
-        itemCount: _categories.length,
-        itemBuilder: (_, i) {
-          final cat = _categories[i];
-          final isSelected = cat == _selectedCategory;
-          return GestureDetector(
-            onTap: () => setState(() => _selectedCategory = cat),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(right: 14),
-              child: Column(
-                children: [
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    width: 54,
-                    height: 54,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.rosePrimary
-                          : AppColors.roseLight,
-                      shape: BoxShape.circle,
-                      boxShadow: isSelected
-                          ? [
-                        BoxShadow(
-                          color:
-                          AppColors.rosePrimary.withOpacity(0.35),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        )
-                      ]
-                          : null,
-                    ),
-                    child: Icon(
-                      _categoryIcon(cat),
-                      color:
-                      isSelected ? Colors.white : AppColors.roseDark,
-                      size: 22,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    cat,
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: isSelected
-                          ? FontWeight.w700
-                          : FontWeight.w500,
-                      color: isSelected
-                          ? AppColors.rosePrimary
-                          : AppColors.warmGrey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+        children: chips
+            .map((c) => Padding(
+          padding: const EdgeInsets.only(right: 14),
+          child: c,
+        ))
+            .toList(),
       ),
     );
   }
 
-  // ── Promo strip ──────────────────────────────────────────────────
-  Widget _buildPromoStrip(List<Promotion> promos) {
+  // ── Promo strip ────────────────────────────────────────────────────
+  Widget _buildPromoStrip(List<Promotion> promos, bool tablet) {
+    final cardWidth = tablet ? 300.0 : 230.0;
+    final stripHeight = tablet ? 140.0 : 110.0;
+
     return SizedBox(
-      height: 110,
+      height: stripHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: EdgeInsets.symmetric(horizontal: tablet ? 24 : 16),
         itemCount: promos.length,
         itemBuilder: (_, i) {
           final p = promos[i];
           return GestureDetector(
             onTap: () => context.go('/promotions'),
             child: Container(
-              width: 230,
+              width: cardWidth,
               margin: const EdgeInsets.only(right: 12),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(16),
@@ -481,10 +557,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           Text(
                             p.title,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w600,
-                              fontSize: 13,
+                              fontSize: tablet ? 15 : 13,
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -504,12 +580,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   IconData _categoryIcon(String cat) {
     switch (cat) {
-      case 'Hair':   return Icons.content_cut;
-      case 'Nails':  return Icons.back_hand_outlined;
-      case 'Makeup': return Icons.face_retouching_natural;
-      case 'Spa':    return Icons.spa_outlined;
-      case 'Bridal': return Icons.favorite_outline;
-      default:       return Icons.auto_awesome;
+      case 'Hair':
+        return Icons.content_cut;
+      case 'Nails':
+        return Icons.back_hand_outlined;
+      case 'Makeup':
+        return Icons.face_retouching_natural;
+      case 'Spa':
+        return Icons.spa_outlined;
+      case 'Bridal':
+        return Icons.favorite_outline;
+      default:
+        return Icons.auto_awesome;
     }
   }
 
@@ -520,7 +602,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// ── Section header ────────────────────────────────────────────────────
+// ── Section header ─────────────────────────────────────────────────────
 class _SectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
@@ -543,9 +625,12 @@ class _SectionHeader extends StatelessWidget {
             children: [
               Text(title, style: AppTextStyles.displaySm),
               if (subtitle != null)
-                Text(subtitle!,
-                    style: AppTextStyles.caption
-                        .copyWith(color: AppColors.warmGrey)),
+                Text(
+                  subtitle!,
+                  style: AppTextStyles.caption.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
             ],
           ),
         ),
@@ -555,7 +640,7 @@ class _SectionHeader extends StatelessWidget {
             child: Text(
               'See all',
               style: AppTextStyles.labelMd.copyWith(
-                color: AppColors.rosePrimary,
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),
@@ -564,7 +649,7 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-// ── Error card ────────────────────────────────────────────────────────
+// ── Error card ─────────────────────────────────────────────────────────
 class _ErrorCard extends StatelessWidget {
   final String message;
   final VoidCallback onRetry;
@@ -582,8 +667,7 @@ class _ErrorCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Icon(Icons.wifi_off_rounded,
-              size: 36, color: AppColors.error),
+          const Icon(Icons.wifi_off_rounded, size: 36, color: AppColors.error),
           const SizedBox(height: 10),
           Text(
             'Couldn\'t load salons',
@@ -592,8 +676,9 @@ class _ErrorCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Check your connection and try again.',
-            style:
-            AppTextStyles.caption.copyWith(color: AppColors.warmGrey),
+            style: AppTextStyles.caption.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 14),
@@ -602,8 +687,9 @@ class _ErrorCard extends StatelessWidget {
             icon: const Icon(Icons.refresh, size: 16),
             label: const Text('Retry'),
             style: OutlinedButton.styleFrom(
-              foregroundColor: AppColors.rosePrimary,
-              side: const BorderSide(color: AppColors.rosePrimary),
+              foregroundColor: Theme.of(context).colorScheme.primary,
+              side: BorderSide(
+                  color: Theme.of(context).colorScheme.primary),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(20)),
             ),

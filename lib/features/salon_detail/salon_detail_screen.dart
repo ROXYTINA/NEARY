@@ -18,6 +18,10 @@ import '../../app_widget/common_widget.dart';
 
 class SalonDetailScreen extends StatefulWidget {
   final String salonId;
+
+  bool _isTablet(BuildContext context) =>
+      MediaQuery.of(context).size.width >= 600;
+
   const SalonDetailScreen({super.key, required this.salonId});
 
   @override
@@ -98,46 +102,75 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
 
           // ── Hero AppBar ──────────────────────────────────────────
           SliverAppBar(
+
             expandedHeight: 280,
             pinned: true,
             stretch: true,
             backgroundColor: AppColors.rosePrimary,
+
+
+            // ── back button──────────────────────────────────────────
             leading: Padding(
+
               padding: const EdgeInsets.all(8),
+
               child: CircleAvatar(
+
                 backgroundColor: Colors.black26,
                 child: IconButton(
                   icon: const Icon(Icons.arrow_back, color: Colors.white, size: 20),
                   onPressed: () => context.pop(),
+
                 ),
+
               ),
+
             ),
+
+            // ── fav button ──────────────────────────────────────────
             actions: [
+
               Padding(
+
                 padding: const EdgeInsets.all(8),
+
                 child: CircleAvatar(
+
                   backgroundColor: Colors.black26,
+
                   child: IconButton(
+
                     icon: Icon(
                       isFav ? Icons.favorite : Icons.favorite_border,
                       color: isFav ? Colors.pinkAccent : Colors.white,
                       size: 20,
                     ),
+
                     onPressed: () => favorites.toggleSalon(salon),
+
                   ),
                 ),
               ),
+
             ],
+
+
             flexibleSpace: FlexibleSpaceBar(
+
               stretchModes: const [StretchMode.zoomBackground],
+
               background: Stack(
                 fit: StackFit.expand,
+
                 children: [
-                  // Cover image
+
+                  // ── cover images  ──────────────────────────────────────────
                   coverUrl.isNotEmpty
                       ? CachedNetworkImage(
                     imageUrl: coverUrl,
+
                     fit: BoxFit.cover,
+
                     placeholder: (_, __) =>
                         Container(color: AppColors.roseLight),
                     errorWidget: (_, __, ___) =>
@@ -148,16 +181,21 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   // Gradient overlay — stronger at bottom for text legibility
                   Container(
                     decoration: const BoxDecoration(
+
                       gradient: LinearGradient(
+
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
+
                         colors: [
                           Colors.transparent,
                           Colors.transparent,
                           Colors.black45,
                           Colors.black87,
                         ],
+
                         stops: [0.0, 0.4, 0.75, 1.0],
+
                       ),
                     ),
                   ),
@@ -197,21 +235,32 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
             ),
           ),
 
+
+
           // ── Info strip ──────────────────────────────────────────
           SliverToBoxAdapter(
+
             child: Container(
+
               color: Theme.of(context).scaffoldBackgroundColor,
+
               child: Column(
+
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
                   // Quick stats row
                   Padding(
+
                     padding: const EdgeInsets.fromLTRB(20, 16, 20, 0),
+
                     child: Row(
+
                       children: [
+
                         // Rating
                         _StatChip(
+
                           icon: Icons.star_rounded,
                           iconColor: AppColors.goldMid,
                           label:
@@ -237,6 +286,7 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                             label: salon.priceRange,
                           ),
                       ],
+
                     ),
                   ),
 
@@ -245,17 +295,24 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   // Address
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 20),
+
                     child: Row(
+
                       children: [
-                        const Icon(Icons.location_on_outlined,
-                            size: 15, color: AppColors.warmGrey),
+
+                        Icon(Icons.location_on_outlined,
+                            size: 15, color: Theme.of(context).colorScheme.onSurfaceVariant),
                         const SizedBox(width: 6),
+
                         Expanded(
+
                           child: Text(salon.address,
                               style: AppTextStyles.caption,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
+
                         ),
+
                       ],
                     ),
                   ),
@@ -267,14 +324,19 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                     padding: const EdgeInsets.symmetric(horizontal: 20),
                     child: Row(
                       children: [
-                        const Icon(Icons.phone_outlined,
-                            size: 15, color: AppColors.warmGrey),
+
+                        Icon(Icons.phone_outlined,
+                            size: 15, color: Theme.of(context).colorScheme.onSurfaceVariant),
+
                         const SizedBox(width: 6),
+
                         Expanded(
+
                           child: Text(salon.phone,
                               style: AppTextStyles.caption,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis),
+
                         ),
                       ],
                     ),
@@ -284,25 +346,35 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
 
                   // Category chips
                   if (salon.categories.isNotEmpty)
+
                     SizedBox(
+
                       height: 30,
+
                       child: ListView.separated(
+
                         padding: const EdgeInsets.symmetric(horizontal: 20),
                         scrollDirection: Axis.horizontal,
                         itemCount: salon.categories.length,
+
                         separatorBuilder: (_, __) =>
+
                         const SizedBox(width: 8),
+
                         itemBuilder: (_, i) => Container(
+
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 5),
+
                           decoration: BoxDecoration(
-                            color: AppColors.roseLight,
+                            color: Theme.of(context).colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(20),
                           ),
+
                           child: Text(
                             salon.categories[i],
                             style: AppTextStyles.labelSm.copyWith(
-                              color: AppColors.rosePrimary,
+                              color: Theme.of(context).colorScheme.primary,
                             ),
                           ),
                         ),
@@ -312,11 +384,15 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   const SizedBox(height: 16),
                   const Divider(height: 1),
 
+
+
                   // Tabs
                   TabBar(
                     controller: _tabController,
                     isScrollable: false,
                     labelStyle: AppTextStyles.labelMd,
+                    labelColor: Theme.of(context).colorScheme.primary,
+                    unselectedLabelColor: Theme.of(context).colorScheme.onSurfaceVariant,
                     tabs: const [
                       Tab(text: 'Services'),
                       Tab(text: 'Stylists'),
@@ -324,42 +400,55 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                       Tab(text: 'Gallery'),
                     ],
                   ),
+
+
                 ],
               ),
             ),
           ),
 
+
           // ── Tab content ─────────────────────────────────────────
           SliverFillRemaining(
+
             child: TabBarView(
+
               controller: _tabController,
+
               children: [
 
                 // ── Services ──────────────────────────────────────
                 _services.isEmpty
                     ? const Center(child: Text('No services available'))
                     : ListView.builder(
+
                   padding: const EdgeInsets.all(16),
+
                   itemCount: _services.length,
+
                   itemBuilder: (_, i) {
+
                     final svc = _services[i];
+
                     return ServiceCard(
                       service: svc,
                       isSelected: selectedServiceIds.contains(svc.id),
+
                       onTap: () => context
                           .push('/service/${svc.salonId}/${svc.id}'),
                     );
                   },
                 ),
 
-                // ── Stylists ──────────────────────────────────────
+
+
+                // ── Stylists ──────────────────────────────────────────
                 _stylists.isEmpty
                     ? const Center(child: Text('No stylists listed'))
                     : GridView.builder(
                   padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 4 : 2,
                     mainAxisExtent: 220,
                     crossAxisSpacing: 10,
                     mainAxisSpacing: 10,
@@ -381,26 +470,40 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                   },
                 ),
 
-                // ── Reviews ───────────────────────────────────────
+
+                // ── Reviews ───────────────────────────────────────────
                 _reviews.isEmpty
                     ? const Center(child: Text('No reviews yet'))
+                    : MediaQuery.of(context).size.width >= 600
+                    ? GridView.builder(
+                  padding: const EdgeInsets.all(16),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    crossAxisSpacing: 12,
+                    mainAxisSpacing: 12,
+                    mainAxisExtent: 200,
+                  ),
+                  itemCount: _reviews.length,
+                  itemBuilder: (_, i) => ReviewCard(review: _reviews[i]),
+                )
                     : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: _reviews.length,
-                  itemBuilder: (_, i) =>
-                      ReviewCard(review: _reviews[i]),
+                  itemBuilder: (_, i) => ReviewCard(review: _reviews[i]),
                 ),
 
-                // ── Gallery ───────────────────────────────────────
+
+
+                // ── Gallery ───────────────────────────────────────────
                 _galleryImages.isEmpty
                     ? const Center(child: Text('No gallery images'))
                     : GridView.builder(
-                  padding: const EdgeInsets.all(16),
-                  gridDelegate:
-                  const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 8,
-                    mainAxisSpacing: 8,
+                  padding: const EdgeInsets.all(12),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: MediaQuery.of(context).size.width >= 600 ? 4 : 2,
+                    crossAxisSpacing: 10,
+                    mainAxisSpacing: 10,
+                    childAspectRatio: 1,
                   ),
                   itemCount: _galleryImages.length,
                   itemBuilder: (_, i) => ClipRRect(
@@ -411,6 +514,8 @@ class _SalonDetailScreenState extends State<SalonDetailScreen>
                     ),
                   ),
                 ),
+
+
               ],
             ),
           ),
@@ -464,8 +569,7 @@ class _StatChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppColors.divider),
-      ),
+        border: Border.all(color: Theme.of(context).dividerColor),      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
