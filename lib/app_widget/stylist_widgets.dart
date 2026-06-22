@@ -19,24 +19,35 @@ class StylistCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+
+
+
     return GestureDetector(
+
       onTap: onTap,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.all(6),
+
         decoration: BoxDecoration(
+
           color: isSelected
-              ? AppColors.rosePrimary.withOpacity(0.08)
+              ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
               : Theme.of(context).cardTheme.color,
+
           borderRadius: BorderRadius.circular(16),
+
           border: Border.all(
-            color: isSelected ? AppColors.rosePrimary : AppColors.divider,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
             width: isSelected ? 2 : 1,
           ),
+
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: AppColors.rosePrimary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
               blurRadius: 8,
               offset: const Offset(0, 4),
             )
@@ -49,13 +60,20 @@ class StylistCard extends StatelessWidget {
             )
           ],
         ),
+
+
         child: Padding(
+
           padding: const EdgeInsets.all(12),
+
+
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
               // ── Avatar + selected badge ──────────────────
               Stack(
+
                 alignment: Alignment.bottomRight,
                 children: [
                   NetworkAvatar(
@@ -63,6 +81,7 @@ class StylistCard extends StatelessWidget {
                     radius: 36,
                     icon: Icons.person,
                   ),
+
                   if (isSelected)
                     Container(
                       padding: const EdgeInsets.all(2),
@@ -76,10 +95,15 @@ class StylistCard extends StatelessWidget {
                         size: 18,
                       ),
                     ),
+
+
                 ],
+
+
               ),
 
               const SizedBox(height: 10),
+
 
               // ── Name ────────────────────────────────────
               Text(
@@ -92,11 +116,12 @@ class StylistCard extends StatelessWidget {
 
               const SizedBox(height: 2),
 
+
               // ── Role ────────────────────────────────────
               Text(
                 stylist.role,
                 style: AppTextStyles.caption.copyWith(
-                  color: AppColors.warmGrey,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
                 textAlign: TextAlign.center,
                 maxLines: 1,
@@ -105,17 +130,22 @@ class StylistCard extends StatelessWidget {
 
               const SizedBox(height: 8),
 
+
               // ── Rating ──────────────────────────────────
               Container(
                 padding: const EdgeInsets.symmetric(
                     horizontal: 8, vertical: 3),
+
                 decoration: BoxDecoration(
                   color: AppColors.goldMid.withOpacity(0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
+
                 child: Row(
+
                   mainAxisSize: MainAxisSize.min,
                   children: [
+
                     const Icon(Icons.star_rounded,
                         size: 13, color: AppColors.goldMid),
                     const SizedBox(width: 3),
@@ -125,42 +155,65 @@ class StylistCard extends StatelessWidget {
                         color: AppColors.goldMid,
                         fontWeight: FontWeight.w600,
                       ),
+
                     ),
+
                   ],
+
                 ),
+
               ),
+
+
 
               // ── Skills ──────────────────────────────────
               if (stylist.skills.isNotEmpty) ...[
                 const SizedBox(height: 8),
+
                 Wrap(
+
                   spacing: 4,
                   runSpacing: 4,
                   alignment: WrapAlignment.center,
+
                   children: stylist.skills.take(2).map((s) {
+
                     return Container(
+
                       padding: const EdgeInsets.symmetric(
                           horizontal: 7, vertical: 3),
+
                       decoration: BoxDecoration(
+
                         color: isSelected
-                            ? AppColors.rosePrimary.withOpacity(0.12)
-                            : AppColors.roseLight,
+                            ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
+                            : Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(20),
                       ),
+
                       child: Text(
+
                         s,
                         style: TextStyle(
                           fontSize: 10,
                           color: isSelected
-                              ? AppColors.rosePrimary
-                              : AppColors.warmGrey,
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurfaceVariant,
                           fontWeight: FontWeight.w500,
+
                         ),
+
                       ),
-                    );
+
+                    )
+                    ;
                   }).toList(),
+
+
                 ),
+
               ],
+
             ],
           ),
         ),

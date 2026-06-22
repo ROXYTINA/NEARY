@@ -1,17 +1,21 @@
-
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../app_state/api_settings.dart';
+import '../../app_state/notifiers.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
 import '../../app_data/api_service.dart';
 import '../../app_model/models.dart';
 
+bool _isTablet(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 600;
+
 class ServiceDetailScreen extends StatefulWidget {
   final String serviceId;
   final String salonId;
+
 
   const ServiceDetailScreen({
     super.key,
@@ -28,6 +32,7 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   List<Review> _reviews = [];
   bool _loading = true;
   bool _hasError = false;
+  bool _isFav = false;
 
   @override
   void initState() {
@@ -36,7 +41,10 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 
   Future<void> _loadData() async {
-    setState(() { _loading = true; _hasError = false; });
+    setState(() {
+      _loading = true;
+      _hasError = false;
+    });
     try {
       final baseUrl = context.read<ApiSettingsNotifier>().baseUrl;
       final api = ApiService(baseUrl);
@@ -55,23 +63,31 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() { _loading = false; _hasError = true; });
+      if (mounted) {
+        setState(() {
+        _loading = false;
+        _hasError = true;
+      });
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final tablet = _isTablet(context);
+
     return Scaffold(
-      backgroundColor: const Color(0xFF130F14),
       body: SafeArea(
         child: Column(
           children: [
             _buildHeader(context),
 
             if (_loading)
-              const Expanded(
+              Expanded(
                 child: Center(
-                  child: CircularProgressIndicator(color: Color(0xFFD15170)),
+                  child: CircularProgressIndicator(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               )
 
@@ -81,195 +97,38 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.error_outline, color: Colors.white38, size: 48),
+                      Icon(Icons.error_outline,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          size: 48),
                       const SizedBox(height: 12),
-                      const Text('Service not found',
-                          style: TextStyle(color: Colors.white60, fontSize: 16)),
+                      Text(
+                        'Service not found',
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          fontSize: 16,
+                        ),
+                      ),
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: _loadData,
-                        child: const Text('Retry',
-                            style: TextStyle(color: Color(0xFFD15170))),
+                        child: Text(
+                          'Retry',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
               )
+
             else
               Expanded(
                 child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 32),
-
-                      // Icon box
-                      Container(
-                        padding: const EdgeInsets.all(24),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF261D24),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: Colors.white.withOpacity(0.05)),
-                        ),
-                        child: Icon(
-                          _getServiceIcon(_service!.name),
-                          size: 48,
-                          color: const Color(0xFFD15170),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            // Name
-                            Text(
-                              _service!.name,
-                              style: AppTextStyles.heroDisplay.copyWith(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              textAlign: TextAlign.center,
-                            ),
-                            const SizedBox(height: 12),
-
-                            // Duration & Rating
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(
-                                  "⏱️ ${_service!.durationLabel.isEmpty ? '30 min' : _service!.durationLabel}",
-                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                                ),
-                                const SizedBox(width: 16),
-                                const Icon(Icons.star, color: Colors.amber, size: 16),
-                                const SizedBox(width: 4),
-                                Text(
-                                  '${_service!.rating} (${_reviews.length} reviews)',
-                                  style: const TextStyle(color: Colors.grey, fontSize: 14),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-
-                            // Price
-                            Text(
-                              '\$${_service!.price.toStringAsFixed(0)}',
-                              style: const TextStyle(
-                                color: Color(0xFFD15170),
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // Description
-                            const Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text('Description',
-                                  style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold)),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              _service!.description.isEmpty
-                                  ? "Enjoy a premium, tailored experience with professional care and styling."
-                                  : _service!.description,
-                              style: const TextStyle(
-                                  color: Colors.white70, fontSize: 15, height: 1.5),
-                            ),
-                            const SizedBox(height: 28),
-
-                            // Gallery
-                            if (_service!.beforeAfterImages.isNotEmpty) ...[
-                              const Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text('Gallery',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold)),
-                              ),
-                              const SizedBox(height: 12),
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: _service!.beforeAfterImages.length,
-                                gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: 3,
-                                  crossAxisSpacing: 8,
-                                  mainAxisSpacing: 8,
-                                ),
-                                itemBuilder: (context, index) => ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: CachedNetworkImage(
-                                    imageUrl: _service!.beforeAfterImages[index],
-                                    fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                        Container(color: AppColors.divider),
-                                    errorWidget: (context, url, error) =>
-                                    const Icon(Icons.broken_image,
-                                        color: Colors.white24),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                            ],
-
-                            // Reviews
-                            if (_reviews.isNotEmpty) ...[
-                              Align(
-                                alignment: Alignment.centerLeft,
-                                child: Text(
-                                  'User Reviews (${_reviews.length})',
-                                  style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              ..._reviews.map((r) => _ReviewCard(review: r)),
-                              const SizedBox(height: 24),
-                            ],
-
-                            // Book Now
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 24.0),
-                              child: SizedBox(
-                                width: double.infinity,
-                                height: 54,
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF8C3A52),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(14),
-                                    ),
-                                  ),
-                                  onPressed: () =>
-                                      context.push('/service/${widget.serviceId}/${widget.salonId}'),
-                                  child: const Text(
-                                    'Book Now',
-                                    style: TextStyle(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
+                  child: tablet
+                      ? _buildTabletLayout(context)
+                      : _buildPhoneLayout(context),
                 ),
               ),
           ],
@@ -278,23 +137,244 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
+  // ── Phone: centered single column ─────────────────────────────────
+  Widget _buildPhoneLayout(BuildContext context) {
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+
+      children: [
+
+        const SizedBox(height: 32),
+
+        _ServiceIconBox(service: _service!),
+        const SizedBox(height: 24),
+
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+
+          child: _ServiceBody(
+            service: _service!,
+            reviews: _reviews,
+            salonId: widget.salonId,
+            serviceId: widget.serviceId,
+            galleryCrossAxisCount: 3,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ── Tablet: icon on left, content on right ────────────────────────
+  Widget _buildTabletLayout(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      padding: const EdgeInsets.all(32),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+
+          // Left: icon + price + meta
+          SizedBox(
+            width: 220,
+            child: Column(
+              children: [
+                _ServiceIconBox(service: _service!),
+                const SizedBox(height: 20),
+
+                // Price
+                Text(
+                  '\$${_service!.price.toStringAsFixed(0)}',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 40,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Duration
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.schedule_outlined,
+                        size: 14,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    const SizedBox(width: 4),
+                    Text(
+                      _service!.durationLabel.isEmpty
+                          ? '30 min'
+                          : _service!.durationLabel,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+
+                // Rating
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(Icons.star,
+                        color: AppColors.goldMid, size: 16),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${_service!.rating} (${_reviews.length} reviews)',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // Book Now button
+                SizedBox(
+                  width: double.infinity,
+                  height: 50,
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Theme.of(context).colorScheme.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    onPressed: () => context
+                        .push('/service/${widget.serviceId}/${widget.salonId}'),
+                    child: const Text(
+                      'Book Now',
+                      style: TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(width: 32),
+          const VerticalDivider(),
+          const SizedBox(width: 32),
+
+          // Right: name, description, gallery, reviews
+          Expanded(
+            child: _ServiceBody(
+              service: _service!,
+              reviews: _reviews,
+              salonId: widget.salonId,
+              serviceId: widget.serviceId,
+              galleryCrossAxisCount: 4,
+              hidePriceAndMeta: true, // already shown on left panel
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    final favorites = context.watch<FavoritesNotifier>();
+    final isFav = _service == null
+        ? false
+        : favorites.isServiceFavorite(_service!.id);
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
+
+          // Back button
           IconButton(
-            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 22),
-            onPressed: () => context.canPop() ? context.pop() : context.go('/home'),
+            icon: Icon(
+              Icons.arrow_back,
+              color: Theme.of(context).colorScheme.onSurface,
+              size: 20,
+            ),
+            onPressed: () =>
+            context.canPop() ? context.pop() : context.go('/home'),
           ),
-          Text(
-            _service?.name ?? 'Service Details',
-            style: const TextStyle(
-                color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
+
+          // Title
+          Expanded(
+            child: Text(
+              _service?.name ?? 'Service Details',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
-          const SizedBox(width: 48),
+
+          // ⭐ Favorite button (NEW)
+          Padding(
+            padding: const EdgeInsets.all(8),
+            child: CircleAvatar(
+              backgroundColor: Colors.black26,
+              child: IconButton(
+                icon: Icon(
+                  isFav ? Icons.favorite : Icons.favorite_border,
+                  color: isFav ? Colors.pinkAccent : Colors.white,
+                  size: 20,
+                ),
+                onPressed: () {
+                  if (_service == null) return;
+
+                  favorites.toggleServiceFav(_service!);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        isFav
+                            ? 'Removed from favorites 💔'
+                            : 'Added to favorites ❤️',
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+
+
+}
+
+// ── Icon box ──────────────────────────────────────────────────────────
+class _ServiceIconBox extends StatelessWidget {
+  final SalonService service;
+  const _ServiceIconBox({required this.service});
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Container(
+
+      padding: const EdgeInsets.all(24),
+
+      decoration: BoxDecoration(
+
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Theme.of(context).dividerColor),
+
+      ),
+
+      child: Icon(
+        _getServiceIcon(service.name),
+        size: 48,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -309,6 +389,201 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   }
 }
 
+// ── Main body content (name, meta, price, description, gallery, reviews, CTA)
+class _ServiceBody extends StatelessWidget {
+  final SalonService service;
+  final List<Review> reviews;
+  final String salonId;
+  final String serviceId;
+  final int galleryCrossAxisCount;
+  final bool hidePriceAndMeta;
+
+  const _ServiceBody({
+    required this.service,
+    required this.reviews,
+    required this.salonId,
+    required this.serviceId,
+    required this.galleryCrossAxisCount,
+    this.hidePriceAndMeta = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+
+        // Name
+        Text(
+          service.name,
+          style: AppTextStyles.heroDisplay.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 26,
+            fontWeight: FontWeight.bold,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        const SizedBox(height: 12),
+
+        // Duration & Rating (hidden on tablet — shown in left panel)
+        if (!hidePriceAndMeta) ...[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.schedule_outlined,
+                  size: 14,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant),
+              const SizedBox(width: 4),
+              Text(
+                service.durationLabel.isEmpty ? '30 min' : service.durationLabel,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Icon(Icons.star, color: AppColors.goldMid, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                '${service.rating} (${reviews.length} reviews)',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 14,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+
+          // Price
+          Text(
+            '\$${service.price.toStringAsFixed(0)}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 36,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          const SizedBox(height: 28),
+        ] else
+          const SizedBox(height: 8),
+
+        // Description
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Description',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text(
+            service.description.isEmpty
+                ? 'Enjoy a premium, tailored experience with professional care and styling.'
+                : service.description,
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 15,
+              height: 1.5,
+            ),
+          ),
+        ),
+        const SizedBox(height: 28),
+
+        // Gallery
+        if (service.beforeAfterImages.isNotEmpty) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Gallery',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: service.beforeAfterImages.length,
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: galleryCrossAxisCount,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+            ),
+            itemBuilder: (context, index) => ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: CachedNetworkImage(
+                imageUrl: service.beforeAfterImages[index],
+                fit: BoxFit.cover,
+                placeholder: (_, __) =>
+                    Container(color: Theme.of(context).dividerColor),
+                errorWidget: (_, __, ___) => Icon(
+                  Icons.broken_image,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 28),
+        ],
+
+        // Reviews
+        if (reviews.isNotEmpty) ...[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'User Reviews (${reviews.length})',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurface,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          ...reviews.map((r) => _ReviewCard(review: r)),
+          const SizedBox(height: 24),
+        ],
+
+        // Book Now (phone only — tablet has it in left panel)
+        if (!hidePriceAndMeta)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 24),
+            child: SizedBox(
+              width: double.infinity,
+              height: 54,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Theme.of(context).colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () =>
+                    context.push('/service/$serviceId/$salonId'),
+                child: const Text(
+                  'Book Now',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+// ── Review card ───────────────────────────────────────────────────────
 class _ReviewCard extends StatelessWidget {
   final Review review;
   const _ReviewCard({required this.review});
@@ -319,9 +594,9 @@ class _ReviewCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF261D24),
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: Theme.of(context).dividerColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -330,14 +605,16 @@ class _ReviewCard extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 18,
-                backgroundColor: AppColors.roseMid,
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 child: (review.userAvatar == null || review.userAvatar!.isEmpty)
                     ? Text(
                   review.userName.isNotEmpty
                       ? review.userName[0].toUpperCase()
                       : '?',
-                  style: const TextStyle(
-                      color: Colors.white, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 )
                     : ClipOval(
                   child: CachedNetworkImage(
@@ -345,12 +622,14 @@ class _ReviewCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     width: 36,
                     height: 36,
-                    errorWidget: (context, url, error) => Text(
+                    errorWidget: (_, __, ___) => Text(
                       review.userName.isNotEmpty
                           ? review.userName[0].toUpperCase()
                           : '?',
-                      style: const TextStyle(
-                          color: Colors.white, fontWeight: FontWeight.bold),
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ),
@@ -360,31 +639,46 @@ class _ReviewCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(review.userName,
-                        style: const TextStyle(
-                            color: Colors.white, fontWeight: FontWeight.w600)),
+                    Text(
+                      review.userName,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                     Row(
                       children: List.generate(
                         5,
-                            (i) => Icon(Icons.star,
-                            size: 14,
-                            color: i < review.rating.toInt()
-                                ? AppColors.goldMid
-                                : Colors.white24),
+                            (i) => Icon(
+                          Icons.star,
+                          size: 14,
+                          color: i < review.rating.toInt()
+                              ? AppColors.goldMid
+                              : Theme.of(context).dividerColor,
+                        ),
                       ),
                     ),
                   ],
                 ),
               ),
-              Text(review.date,
-                  style: const TextStyle(color: Colors.grey, fontSize: 12)),
+              Text(
+                review.date,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 12,
+                ),
+              ),
             ],
           ),
           if (review.comment != null && review.comment!.isNotEmpty) ...[
             const SizedBox(height: 8),
-            Text(review.comment!,
-                style: TextStyle(
-                    color: Colors.white.withOpacity(0.8), fontSize: 14)),
+            Text(
+              review.comment!,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+              ),
+            ),
           ],
         ],
       ),

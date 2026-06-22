@@ -182,6 +182,7 @@ class FavoritesNotifier extends ChangeNotifier {
 
   bool isSalonFav(String id)   => _favSalonIds.contains(id);
   bool isServiceFav(String id) => _favServiceIds.contains(id);
+  bool isServiceFavorite(String id) => _favServiceIds.contains(id);
 
   Future<void> toggleSalon(Salon salon) async {
     if (_favSalonIds.contains(salon.id)) {
@@ -241,6 +242,23 @@ class FavoritesNotifier extends ChangeNotifier {
     } catch (e) {
       debugPrint('FavoritesNotifier rehydrate error: $e');
     }
+  }
+
+  Future<void> toggleServiceFav(SalonService service) async {
+    await toggleService(service);
+  }
+
+  Future<void> toggleServiceFavById(String serviceId, SalonService service) async {
+    if (_favServiceIds.contains(serviceId)) {
+      _favServiceIds.remove(serviceId);
+      _serviceCache.remove(serviceId);
+    } else {
+      _favServiceIds.add(serviceId);
+      _serviceCache[serviceId] = service;
+    }
+
+    notifyListeners();
+    await _persist();
   }
 
 }

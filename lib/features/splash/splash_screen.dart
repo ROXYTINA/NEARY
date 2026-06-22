@@ -114,28 +114,42 @@ class _SplashScreenState extends State<SplashScreen>
 
   @override
   Widget build(BuildContext context) {
-    // ✅ Scaffold is outermost — gradient applied inside via AnimatedBuilder
+
+
     return Scaffold(
+
       body: AnimatedBuilder(
+
         animation: _bgAnim,
         builder: (context, child) => Container(
+
           width: double.infinity,
           height: double.infinity,
+
           decoration: BoxDecoration(
+
             gradient: LinearGradient(
+
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
+
               colors: [
+
                 Color.lerp(
                     AppColors.cream, AppColors.roseLight, _bgAnim.value)!,
                 Color.lerp(AppColors.blushWhite,
                     AppColors.roseMid.withOpacity(0.3), _bgAnim.value)!,
               ],
+
             ),
+
           ),
+
           child: child,
         ),
-        // ✅ child is built once, not rebuilt on every animation tick
+
+
+
         child: FadeTransition(
           opacity: _exitOpacity,
           child: SafeArea(
@@ -193,14 +207,14 @@ class _SplashScreenState extends State<SplashScreen>
                         Text(
                           'Neary',
                           style: AppTextStyles.displayLg.copyWith(
-                            color: AppColors.rosePrimary,
+                            color: Theme.of(context).colorScheme.primary,
                             letterSpacing: 1,
                           ),
                         ),
                         Text(
                           ' Beauty',
                           style: AppTextStyles.displayLg.copyWith(
-                            color: AppColors.charcoal,
+                            color: Theme.of(context).colorScheme.onSurface,
                             letterSpacing: 1,
                           ),
                         ),
@@ -217,8 +231,9 @@ class _SplashScreenState extends State<SplashScreen>
                   child: Text(
                     'BUILD FOR ALL MY GIRLIES',
                     textAlign: TextAlign.center,
+
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.warmGrey,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                       fontWeight: FontWeight.w500,
                       letterSpacing: 3,
                       height: 1.5,
@@ -233,7 +248,9 @@ class _SplashScreenState extends State<SplashScreen>
                   opacity: _tagOpacity,
                   child: const _PulsingDots(),
                 ),
+
                 const SizedBox(height: 48),
+
               ],
             ),
           ),

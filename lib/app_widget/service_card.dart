@@ -4,6 +4,78 @@ import '../app_model/models.dart';
 import '../app_theme/app_colors.dart';
 import '../app_theme/app_text_styles.dart';
 
+bool _isTablet(BuildContext context) =>
+    MediaQuery.of(context).size.width >= 600;
+
+// ── Use this wrapper wherever you render the services list ────────────
+//
+//   ServiceCardGrid(
+//     services: services,
+//     selectedId: _selectedId,
+//     favIds: _favIds,
+//     onTap: (s) => ...,
+//     onFav: (s) => ...,
+//   )
+//
+class ServiceCardGrid extends StatelessWidget {
+  final List<SalonService> services;
+  final String? selectedId;
+  final Set<String> favIds;
+  final void Function(SalonService) onTap;
+  final void Function(SalonService)? onFav;
+
+  const ServiceCardGrid({
+    super.key,
+    required this.services,
+    this.selectedId,
+    this.favIds = const {},
+    required this.onTap,
+    this.onFav,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final tablet = _isTablet(context);
+
+    if (tablet) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 0,
+          childAspectRatio: 2.6,
+        ),
+        itemCount: services.length,
+        itemBuilder: (_, i) {
+          final s = services[i];
+          return ServiceCard(
+            service: s,
+            isSelected: s.id == selectedId,
+            isFav: favIds.contains(s.id),
+            onTap: () => onTap(s),
+            onFav: onFav != null ? () => onFav!(s) : null,
+          );
+        },
+      );
+    }
+
+    return Column(
+      children: services
+          .map((s) => ServiceCard(
+        service: s,
+        isSelected: s.id == selectedId,
+        isFav: favIds.contains(s.id),
+        onTap: () => onTap(s),
+        onFav: onFav != null ? () => onFav!(s) : null,
+      ))
+          .toList(),
+    );
+  }
+}
+
+// ── ServiceCard ───────────────────────────────────────────────────────
 class ServiceCard extends StatelessWidget {
   final SalonService service;
   final bool isSelected;
@@ -22,6 +94,11 @@ class ServiceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final tablet = _isTablet(context);
+    final iconSize = tablet ? 60.0 : 50.0;
+    final iconInner = tablet ? 28.0 : 24.0;
+    final nameFontSize = tablet ? 16.0 : 15.0;
+
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
@@ -29,47 +106,59 @@ class ServiceCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.roseLight
+              ? Theme.of(context).colorScheme.primaryContainer
               : Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected ? AppColors.rosePrimary : AppColors.divider,
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
             width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Padding(
-          padding: const EdgeInsets.all(14),
+          padding: EdgeInsets.all(tablet ? 16 : 14),
           child: Row(
             children: [
+
               // Category icon
               Container(
-                width: 50,
-                height: 50,
+                width: iconSize,
+                height: iconSize,
                 decoration: BoxDecoration(
-                  color: AppColors.roseLight,
+                  color: Theme.of(context).colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
                   _iconForCategory(service.category),
-                  color: AppColors.rosePrimary,
-                  size: 24,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: iconInner,
                 ),
               ),
+
               const SizedBox(width: 12),
+
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(service.name,
-                        style: AppTextStyles.displaySm
-                            .copyWith(fontSize: 15),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis),
+                    Text(
+                      service.name,
+                      style: AppTextStyles.displaySm
+                          .copyWith(fontSize: nameFontSize),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                     const SizedBox(height: 2),
                     Row(
                       children: [
-                        const Icon(Icons.schedule_outlined,
-                            size: 12, color: AppColors.warmGrey),
+                        Icon(
+                          Icons.schedule_outlined,
+                          size: 12,
+                          color:
+                          Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         const SizedBox(width: 4),
                         Text(service.durationLabel,
                             style: AppTextStyles.caption),
@@ -86,28 +175,41 @@ class ServiceCard extends StatelessWidget {
                   ],
                 ),
               ),
+
               const SizedBox(width: 8),
+
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('\$${service.price.toStringAsFixed(0)}',
-                      style: AppTextStyles.priceSm),
+                  Text(
+                    '\$${service.price.toStringAsFixed(0)}',
+                    style: AppTextStyles.priceSm.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
                   if (onFav != null)
                     GestureDetector(
                       onTap: onFav,
                       child: Icon(
                         isFav ? Icons.favorite : Icons.favorite_border,
                         size: 18,
-                        color: isFav ? AppColors.rosePrimary : AppColors.softGrey,
+                        color: isFav
+                            ? Theme.of(context).colorScheme.primary
+                            : Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                     ),
                 ],
               ),
+
               if (isSelected)
-                const Padding(
-                  padding: EdgeInsets.only(left: 8),
-                  child: Icon(Icons.check_circle,
-                      color: AppColors.rosePrimary, size: 20),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Icon(
+                    Icons.check_circle,
+                    color: Theme.of(context).colorScheme.primary,
+                    size: 20,
+                  ),
                 ),
             ],
           ),

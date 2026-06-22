@@ -29,6 +29,7 @@ class AppTheme {
     ),
 
     textTheme: _textTheme(AppColors.charcoal, AppColors.warmGrey),
+
     appBarTheme: const AppBarTheme(
       backgroundColor: AppColors.cream,
       foregroundColor: AppColors.charcoal,
@@ -37,6 +38,7 @@ class AppTheme {
       centerTitle: true,
       titleTextStyle: AppTextStyles.displaySm,
       iconTheme: IconThemeData(color: AppColors.charcoal),
+
     ),
 
     cardTheme: CardThemeData(
@@ -47,6 +49,7 @@ class AppTheme {
         side: const BorderSide(color: AppColors.divider),
       ),
     ),
+
     elevatedButtonTheme: ElevatedButtonThemeData(
       style: ElevatedButton.styleFrom(
         backgroundColor: AppColors.rosePrimary,
@@ -58,6 +61,7 @@ class AppTheme {
         elevation: 0,
       ),
     ),
+
     outlinedButtonTheme: OutlinedButtonThemeData(
       style: OutlinedButton.styleFrom(
         foregroundColor: AppColors.rosePrimary,
@@ -172,9 +176,9 @@ class AppTheme {
     fontFamily: 'Jost',
     scaffoldBackgroundColor: AppColors.darkBg,
     colorScheme: const ColorScheme.dark(
-      primary: AppColors.darkRose,
+      primary: Color(0xFFFFB3C6),
       onPrimary: Colors.white,
-      primaryContainer: AppColors.darkCard,
+      primaryContainer: Color(0xFF4A1A2A),
       onPrimaryContainer: AppColors.darkText,
       secondary: AppColors.darkGold,
       onSecondary: AppColors.darkBg,
