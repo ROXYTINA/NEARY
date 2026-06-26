@@ -499,62 +499,118 @@ class OnboardingNotifier extends ChangeNotifier {
 }
 
 // ============================================================
-// ChatNotifier
+// ChatNotifier (LIVE BOOKINGS & BACKEND SYNC VERSION)
 // ============================================================
 class ChatNotifier extends ChangeNotifier {
   final Map<String, List<ChatMessage>> _threads = {};
   final Map<String, bool> _typing = {};
+  
+  List<ChatThread> _liveThreads = [];
+  bool _isLoading = false;
 
-  List<ChatThread> get threads {
-    return MockRepository.instance
-        .getAllSalons()
-        .take(5)
-        .map((s) {
-          final msgs = _threads[s.id] ?? [];
-          return ChatThread(
-            salonId: s.id,
-            salonName: s.name,
-            salonAvatar: s.coverImage,
-            lastMessage: msgs.isNotEmpty ? msgs.last.text : 'Tap to start chatting',
-            lastTime: msgs.isNotEmpty ? msgs.last.timestamp : DateTime.now().subtract(const Duration(hours: 2)),
+  List<ChatThread> get threads => _liveThreads;
+  bool get isLoading => _isLoading;
+
+  List<ChatMessage> getMessages(String stylistId) => _threads[stylistId] ?? [];
+  bool isTyping(String stylistId) => _typing[stylistId] ?? false;
+
+  // ============================================================
+  // LOAD LIVE THREADS FROM USER BOOKINGS
+  // ============================================================
+  Future<void> loadUserThreads(String baseUrl, List<Booking> liveBookings) async {
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      final Map<String, ChatThread> activeThreads = {};
+
+      // 1. Loop over your list of real upcoming/past user bookings
+      for (var booking in liveBookings) {
+        final stylistId = booking.stylistId;
+        if (stylistId.isEmpty) continue;
+
+        // 2. Prevent identical duplicate rows for the same stylist profile
+        if (!activeThreads.containsKey(stylistId)) {
+          final msgs = _threads[stylistId] ?? [];
+          
+          activeThreads[stylistId] = ChatThread(
+            stylistId: stylistId,
+            stylistName: booking.stylistName.isNotEmpty ? booking.stylistName : 'Stylist Profile',
+            stylistAvatar: "https://i.pravatar.cc/150?u=$stylistId", // Dynamically generated avatar fallback
+            lastMessage: msgs.isNotEmpty ? msgs.last.text : 'Tap to sync conversation logs',
+            lastTime: msgs.isNotEmpty ? msgs.last.timestamp : DateTime.now(),
             unreadCount: 0,
           );
-        })
-        .toList();
+        }
+      }
+
+      _liveThreads = activeThreads.values.toList();
+    } catch (e) {
+      debugPrint("Error structuralizing chat threads: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
-  List<ChatMessage> getMessages(String salonId) =>
-      _threads[salonId] ?? [];
+  // ============================================================
+  // LOAD LIVE MESSAGES FROM DATABASE VIA API
+  // ============================================================
+  Future<void> syncMessageLogs(String baseUrl, String stylistId, String currentUserId) async {
+    try {
+      final api = ApiService(baseUrl);
+      final List<dynamic> rawMessages = await api.getChatMessages(stylistId, currentUserId);
+      
+      _threads[stylistId] = rawMessages.map((json) {
+        return ChatMessage(
+          id: json['id'] ?? '',
+          salonId: stylistId,
+          text: json['text'] ?? '',
+          isMe: json['sender'] == 'user',
+          timestamp: DateTime.parse(json['timestamp']),
+          isRead: json['is_read'] ?? true,
+        );
+      }).toList();
+      
+      notifyListeners();
+    } catch (e) {
+      debugPrint("Error updating dynamic chat messages: $e");
+    }
+  }
 
-  bool isTyping(String salonId) => _typing[salonId] ?? false;
-
-  Future<void> sendMessage(String salonId, String text) async {
-    final msg = ChatMessage(
+  // ============================================================
+  // SEND MESSAGE TO BACKEND API
+  // ============================================================
+  Future<void> sendMessage(String stylistId, String text, String currentUserId, String baseUrl) async {
+    final localMsg = ChatMessage(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      salonId: salonId,
+      salonId: stylistId,
       text: text,
       isMe: true,
       timestamp: DateTime.now(),
       isRead: true,
     );
-    _threads[salonId] = [...(_threads[salonId] ?? []), msg];
-    _typing[salonId] = true;
+
+    // Optimistic UI updates right away
+    _threads[stylistId] = [...(_threads[stylistId] ?? []), localMsg];
     notifyListeners();
 
-    // Mock auto-reply after 1s
-    await Future.delayed(const Duration(milliseconds: 1200));
-    _typing[salonId] = false;
-    final reply = ChatMessage(
-      id: '${DateTime.now().millisecondsSinceEpoch}r',
-      salonId: salonId,
-      text: MockRepository.instance.getMockReply(salonId),
-      isMe: false,
-      timestamp: DateTime.now(),
-      isRead: false,
-    );
-    _threads[salonId] = [...(_threads[salonId] ?? []), reply];
-    notifyListeners();
+    final payload = {
+      "user_id": currentUserId,
+      "stylist_id": stylistId,
+      "sender": "user",
+      "text": text,
+    };
+
+    try {
+      final api = ApiService(baseUrl);
+      final success = await api.sendMessage(payload);
+      if (!success) {
+        _threads[stylistId] = (_threads[stylistId] ?? []).where((m) => m.id != localMsg.id).toList();
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint("Failed to deliver outbound message: $e");
+    }
   }
-
-
 }

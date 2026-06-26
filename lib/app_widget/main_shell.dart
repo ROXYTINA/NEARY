@@ -14,7 +14,7 @@ class MainShell extends StatefulWidget {
 
 class _MainShellState extends State<MainShell> {
   int _currentIndex = 0;
-  static const _routes = ['/home', '/favorites', '/map', '/promotions'];
+  static const _routes = ['/home', '/favorites', '/map', '/promotions', '/chat'];
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +40,7 @@ class _MainShellState extends State<MainShell> {
           BottomNavigationBarItem(icon: Icon(Icons.favorite_outline), label: 'Favorites'),
           BottomNavigationBarItem(icon: Icon(Icons.map_outlined), label: 'Map'),
           BottomNavigationBarItem(icon: Icon(Icons.local_offer_outlined), label: 'Promos'),
+          BottomNavigationBarItem(icon: Icon(Icons.message_outlined), label: 'Chat'),
         ],
       ),
     );
