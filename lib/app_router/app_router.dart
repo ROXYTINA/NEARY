@@ -144,11 +144,11 @@ class AppRouter {
           ),
         ),
         GoRoute(
-          path: '/chat/:salonId',
+          path: '/chat/:stylistId',
           pageBuilder: (_, state) => _fadeRoute(
             state: state,
             child: ChatThreadScreen(
-              salonId: state.pathParameters['salonId']!,
+              stylistId: state.pathParameters['stylistId']!,
             ),
           ),
         ),

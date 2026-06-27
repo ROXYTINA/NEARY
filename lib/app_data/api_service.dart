@@ -173,4 +173,54 @@ class ApiService {
     return null;
   }
 
+  // ============================================================
+  // GET all user's chat threads (Stylists they have booked)
+  // ============================================================
+  Future<List<ChatThread>> getChatThreads(String stylistId) async {
+    try {
+      final response = await http.get(Uri.parse('$baseUrl/api/chat/threads?stylist_id=$stylistId'));
+      if (response.statusCode == 200) {
+        final List<dynamic> data = json.decode(response.body);
+        return data.map((j) => ChatThread.fromJson(j)).toList();
+      }
+    } catch (e) {
+      print('API Error (Get Chat Threads): $e');
+    }
+    return [];
+  }
+
+  // ============================================================
+  // GET message history between user and stylist
+  // ============================================================
+  Future<List<dynamic>> getChatMessages(String stylistId, String userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/chat/messages?stylist_id=$stylistId&user_id=$userId'),
+      );
+      if (response.statusCode == 200) {
+        return json.decode(response.body);
+      }
+    } catch (e) {
+      print('API Error (Get Chat Messages): $e');
+    }
+    return [];
+  }
+
+  // ============================================================
+  // POST send a message
+  // ============================================================
+  Future<bool> sendMessage(Map<String, dynamic> payload) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/chat/send'),
+        headers: {'Content-Type': 'application/json'},
+        body: json.encode(payload),
+      );
+      return response.statusCode == 200 || response.statusCode == 201;
+    } catch (e) {
+      print('API Error (Send Message): $e');
+      return false;
+    }
+  }
+
 }
