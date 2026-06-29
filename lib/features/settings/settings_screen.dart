@@ -232,14 +232,16 @@ class SettingsScreen extends StatelessWidget {
                   ),
                   actions: [
                     TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('Cancel')),
-                    TextButton(
                       onPressed: () {
                         final newUrl = urlCtrl.text.trim();
                         apiSettings.updateBaseUrl(newUrl);
                         context.read<BookingNotifier>().load(newUrl);
-                        Navigator.pop(context);
+                        
+                        if (context.canPop()) {
+                          context.pop(); 
+                        } else {
+                          context.go('/');
+                        }
                       },
                       child: const Text('Save'),
                     ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-//import 'package:qr_flutter/qr_flutter.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 import 'package:confetti/confetti.dart';
 
 import '../../app_state/notifiers.dart';
@@ -46,9 +46,9 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                   child: const Icon(Icons.check_circle, size: 80, color: AppColors.rosePrimary),
                 ),
                 const SizedBox(height: 20),
-                Text('Booking Confirmed!', style: AppTextStyles.heroDisplay),
+                const Text('Booking Confirmed!', style: AppTextStyles.heroDisplay),
                 const SizedBox(height: 12),
-                Text('Your appointment has been scheduled', style: AppTextStyles.caption),
+                const Text('Your appointment has been scheduled', style: AppTextStyles.caption),
                 if (lastBooking != null) ...[
                   const SizedBox(height: 30),
                   Card(
@@ -58,7 +58,7 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Confirmation Code', style: AppTextStyles.labelMd),
+                          const Text('Confirmation Code', style: AppTextStyles.labelMd),
                           Container(
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             padding: const EdgeInsets.all(12),
@@ -81,13 +81,15 @@ class _BookingConfirmationScreenState extends State<BookingConfirmationScreen> {
                                 borderRadius: BorderRadius.circular(8),
                                 border: Border.all(color: AppColors.divider),
                               ),
-                              child: Text(lastBooking.confirmationCode,
-                                  style: AppTextStyles.displaySm,
-                                  textAlign: TextAlign.center),
+                              child: QrImageView(
+                                data: lastBooking.confirmationCode,
+                                version: QrVersions.auto,
+                                size: 130, // Fits nicely within your 150x150 container
+                              ),
                             ),
                           ),
                           const Divider(),
-                          Text('${lastBooking.salonName}', style: AppTextStyles.titleMd),
+                          Text(lastBooking.salonName, style: AppTextStyles.titleMd),
                           const SizedBox(height: 8),
                           ...lastBooking.serviceNames.map((s) => Text('• $s')),
                           const SizedBox(height: 8),
