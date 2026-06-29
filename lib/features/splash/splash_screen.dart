@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:provider/provider.dart';
-
-import '../../app_state/notifiers.dart';
 import '../../app_theme/app_colors.dart';
 import '../../app_theme/app_text_styles.dart';
 
@@ -138,7 +135,7 @@ class _SplashScreenState extends State<SplashScreen>
                 Color.lerp(
                     AppColors.cream, AppColors.roseLight, _bgAnim.value)!,
                 Color.lerp(AppColors.blushWhite,
-                    AppColors.roseMid.withOpacity(0.3), _bgAnim.value)!,
+                    AppColors.roseMid.withValues(alpha: 0.3), _bgAnim.value)!,
               ],
 
             ),
@@ -171,7 +168,7 @@ class _SplashScreenState extends State<SplashScreen>
                         color: Colors.white,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.rosePrimary.withOpacity(0.25),
+                            color: AppColors.rosePrimary.withValues(alpha: 0.25),
                             blurRadius: 40,
                             spreadRadius: 10,
                             offset: const Offset(0, 10),
@@ -293,7 +290,9 @@ class _PulsingDotsState extends State<_PulsingDots>
 
   @override
   void dispose() {
-    for (final c in _controllers) c.dispose();
+    for (final c in _controllers) {
+      c.dispose();
+    }
     super.dispose();
   }
 
@@ -311,7 +310,7 @@ class _PulsingDotsState extends State<_PulsingDots>
             height: 9,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: AppColors.rosePrimary.withOpacity(_anims[i].value),
+              color: AppColors.rosePrimary.withValues(alpha: _anims[i].value),
             ),
           ),
         ),

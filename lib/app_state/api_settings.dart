@@ -6,7 +6,7 @@ class ApiSettingsNotifier extends ChangeNotifier {
   
   // Default IP for backend (Real backend at /api/)
 
-   String _baseUrl = 'http://apisalon.phayuk.com';
+   String _baseUrl = 'https://apisalon.phayuk.com';
 
   String get baseUrl => _baseUrl;
 

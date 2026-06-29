@@ -226,7 +226,7 @@ class SettingsScreen extends StatelessWidget {
                   content: TextField(
                     controller: urlCtrl,
                     decoration: const InputDecoration(
-                      hintText: 'http://10.0.2.2:8000',
+                      hintText: 'https://apisalon.phayuk.com',
                       helperText: 'Include protocol, IP/Domain, and Port',
                     ),
                   ),
@@ -286,7 +286,7 @@ class SettingsScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(error!,
@@ -368,7 +368,7 @@ class SettingsScreen extends StatelessWidget {
                   padding: const EdgeInsets.all(8),
                   margin: const EdgeInsets.only(bottom: 12),
                   decoration: BoxDecoration(
-                    color: AppColors.error.withOpacity(0.1),
+                    color: AppColors.error.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(error!,

@@ -19,7 +19,7 @@ class ApiService {
         return data.map((j) => Salon.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Salons): $e');
+      // print('API Error (Salons): $e');
 
     }
     return [];
@@ -36,7 +36,7 @@ class ApiService {
         return Salon.fromJson(json.decode(response.body));
       }
     } catch (e) {
-      print('API Error (Salon Details): $e');
+      // print('API Error (Salon Details): $e');
     }
     return null;
   }
@@ -53,7 +53,7 @@ class ApiService {
         return data.map((j) => SalonService.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Services for Salon): $e');
+      // print('API Error (Services for Salon): $e');
     }
     return [];
   }
@@ -69,7 +69,7 @@ class ApiService {
         return data.map((j) => Review.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Reviews for Salon): $e');
+      // print('API Error (Reviews for Salon): $e');
     }
     return [];
   }
@@ -86,7 +86,7 @@ class ApiService {
         return data.map((j) => Stylist.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Stylists for Salon): $e');
+      // print('API Error (Stylists for Salon): $e');
     }
     return [];
   }
@@ -102,7 +102,7 @@ class ApiService {
         return List<String>.from(json.decode(response.body));
       }
     } catch (e) {
-      print('API Error (Slots): $e');
+      // print('API Error (Slots): $e');
     }
     return [];
   }
@@ -119,7 +119,7 @@ class ApiService {
         return data.map((j) => Booking.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (My Bookings): $e');
+      // print('API Error (My Bookings): $e');
     }
     return [];
   }
@@ -137,7 +137,7 @@ class ApiService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('API Error (Create Booking): $e');
+      // print('API Error (Create Booking): $e');
       return false;
     }
   }
@@ -153,7 +153,7 @@ class ApiService {
         return data.map((j) => Promotion.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Promotions): $e');
+      // print('API Error (Promotions): $e');
     }
     return [];
   }
@@ -168,7 +168,7 @@ class ApiService {
         return SalonService.fromJson(json.decode(response.body));
       }
     } catch (e) {
-      print('API Error (Service Detail): $e');
+      // print('API Error (Service Detail): $e');
     }
     return null;
   }
@@ -184,7 +184,7 @@ class ApiService {
         return data.map((j) => ChatThread.fromJson(j)).toList();
       }
     } catch (e) {
-      print('API Error (Get Chat Threads): $e');
+      // print('API Error (Get Chat Threads): $e');
     }
     return [];
   }
@@ -201,7 +201,7 @@ class ApiService {
         return json.decode(response.body);
       }
     } catch (e) {
-      print('API Error (Get Chat Messages): $e');
+      // print('API Error (Get Chat Messages): $e');
     }
     return [];
   }
@@ -218,7 +218,7 @@ class ApiService {
       );
       return response.statusCode == 200 || response.statusCode == 201;
     } catch (e) {
-      print('API Error (Send Message): $e');
+      // print('API Error (Send Message): $e');
       return false;
     }
   }

@@ -69,9 +69,9 @@ class _SalonImageCarouselState extends State<SalonImageCarousel> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withOpacity(0.15),
+                Colors.black.withValues(alpha: 0.15),
                 Colors.transparent,
-                Colors.black.withOpacity(0.35),
+                Colors.black.withValues(alpha: 0.35),
               ],
             ),
           ),

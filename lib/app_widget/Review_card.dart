@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../app_model/models.dart';
 import '../app_theme/app_colors.dart';
@@ -21,7 +20,7 @@ class ReviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withValues(alpha: 0.05),
             blurRadius: 8,
             offset: const Offset(0, 3),
           ),
@@ -62,7 +61,7 @@ class ReviewCard extends StatelessWidget {
                             5 - rating,
                                 (_) => Icon(Icons.star_rounded,
                                 size: 15,
-                                color: AppColors.goldMid.withOpacity(0.2)),
+                                color: AppColors.goldMid.withValues(alpha: 0.2)),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -105,8 +104,8 @@ class ReviewCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: Theme.of(context).brightness == Brightness.dark
-                    ? Colors.white.withOpacity(0.05)
-                    : AppColors.roseLight.withOpacity(0.4),
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : AppColors.roseLight.withValues(alpha: 0.4),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Text(

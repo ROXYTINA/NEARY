@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:salon_beauty_app/app_model/chat.dart';
+import 'package:salon_beauty_app/app_theme/app_text_styles.dart';
 import '../../app_state/notifiers.dart';
 import '../../app_state/api_settings.dart';
 
@@ -54,7 +55,11 @@ class _ChatThreadScreenState extends State<ChatThreadScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(currentThread.stylistName),
+        title: Text(
+          currentThread.stylistName, 
+          style: AppTextStyles.displaySm.copyWith(
+            color: Theme.of(context).colorScheme.onSurface,
+          ),),
       ),
       body: Column(
         children: [

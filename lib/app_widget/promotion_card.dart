@@ -28,7 +28,7 @@ class PromotionCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: scheme.shadow.withOpacity(0.08),
+            color: scheme.shadow.withValues(alpha: 0.08),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -57,7 +57,7 @@ class PromotionCard extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent,
-                        Colors.black.withOpacity(0.6),
+                        Colors.black.withValues(alpha: 0.6),
                       ],
                     ),
                   ),
@@ -123,7 +123,7 @@ class PromotionCard extends StatelessWidget {
                               color: scheme.primaryContainer,
                               borderRadius: BorderRadius.circular(10),
                               border: Border.all(
-                                  color: scheme.primary.withOpacity(0.3)),
+                                  color: scheme.primary.withValues(alpha: 0.3)),
                             ),
                             child: Row(
                               mainAxisAlignment:
@@ -162,11 +162,11 @@ class PromotionCard extends StatelessWidget {
                     children: [
                       Icon(Icons.schedule,
                           size: 12,
-                          color: scheme.onSurface.withOpacity(0.5)),
+                          color: scheme.onSurface.withValues(alpha: 0.5)),
                       const SizedBox(width: 4),
                       Text('Expires ${promo.expiryDate}',
                           style: AppTextStyles.caption.copyWith(
-                              color: scheme.onSurface.withOpacity(0.5))),
+                              color: scheme.onSurface.withValues(alpha: 0.5))),
                       const Spacer(),
                       Text(promo.salonName,
                           style: AppTextStyles.caption
