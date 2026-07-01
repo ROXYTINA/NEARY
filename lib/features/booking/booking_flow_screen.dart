@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -87,7 +86,6 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       );
     }
 
-    final salon   = _salon!;
     final booking = context.watch<BookingNotifier>();
 
     return Scaffold(
@@ -190,7 +188,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.rosePrimary.withOpacity(0.07)
+                  ? AppColors.rosePrimary.withValues(alpha: 0.07)
                   : Theme.of(context).cardTheme.color,
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
@@ -294,7 +292,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Pick a date', style: AppTextStyles.displaySm),
+          const Text('Pick a date', style: AppTextStyles.displaySm),
           const SizedBox(height: 12),
           Container(
             decoration: BoxDecoration(
@@ -314,7 +312,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                   shape: BoxShape.circle,
                 ),
                 todayDecoration: BoxDecoration(
-                  color: AppColors.rosePrimary.withOpacity(0.2),
+                  color: AppColors.rosePrimary.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 todayTextStyle:
@@ -322,13 +320,13 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
                 weekendTextStyle:
                 const TextStyle(color: AppColors.warmGrey),
               ),
-              headerStyle: HeaderStyle(
+              headerStyle: const HeaderStyle(
                 formatButtonVisible: false,
                 titleCentered: true,
                 titleTextStyle: AppTextStyles.labelLg,
-                leftChevronIcon: const Icon(Icons.chevron_left,
+                leftChevronIcon: Icon(Icons.chevron_left,
                     color: AppColors.rosePrimary),
-                rightChevronIcon: const Icon(Icons.chevron_right,
+                rightChevronIcon: Icon(Icons.chevron_right,
                     color: AppColors.rosePrimary),
               ),
             ),
@@ -336,7 +334,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
 
           if (booking.draftDate != null) ...[
             const SizedBox(height: 24),
-            Text('Pick a time', style: AppTextStyles.displaySm),
+            const Text('Pick a time', style: AppTextStyles.displaySm),
             const SizedBox(height: 12),
             cw.TimeSlotPicker(
               slots: MockRepository.instance
@@ -357,7 +355,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Your details', style: AppTextStyles.displaySm),
+          const Text('Your details', style: AppTextStyles.displaySm),
           const SizedBox(height: 6),
           Text('So we know who to expect.',
               style: AppTextStyles.caption
@@ -446,7 +444,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('All set?', style: AppTextStyles.displaySm),
+          const Text('All set?', style: AppTextStyles.displaySm),
           const SizedBox(height: 4),
           Text('Review your booking before confirming.',
               style:
@@ -482,7 +480,7 @@ class _BookingFlowScreenState extends State<BookingFlowScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Total due', style: AppTextStyles.titleMd),
+              const Text('Total due', style: AppTextStyles.titleMd),
               Text(
                 '\$${booking.draftTotal.toStringAsFixed(0)}',
                 style: AppTextStyles.titleMd.copyWith(

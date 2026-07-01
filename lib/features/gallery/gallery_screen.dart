@@ -21,7 +21,7 @@ class GalleryScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: items.isEmpty
-          ? Center(child: Text('No images in gallery.', style: AppTextStyles.bodyLg))
+          ? const Center(child: Text('No images in gallery.', style: AppTextStyles.bodyLg))
           : GridView.builder(
               padding: const EdgeInsets.all(20),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(

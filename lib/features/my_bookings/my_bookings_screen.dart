@@ -304,7 +304,7 @@ class _BookingCardState extends State<_BookingCard> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 10, vertical: 4),
                         decoration: BoxDecoration(
-                          color: _statusColor.withOpacity(0.12),
+                          color: _statusColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -351,7 +351,7 @@ class _BookingCardState extends State<_BookingCard> {
                       const Icon(Icons.confirmation_number_outlined,
                           size: 16, color: AppColors.warmGrey),
                       const SizedBox(width: 6),
-                      Text('Confirmation: ',
+                      const Text('Confirmation: ',
                           style: AppTextStyles.caption),
                       Text(
                         b.confirmationCode,
@@ -377,7 +377,7 @@ class _BookingCardState extends State<_BookingCard> {
                   const SizedBox(height: 12),
 
                   // Services breakdown
-                  Text('Services', style: AppTextStyles.labelLg),
+                  const Text('Services', style: AppTextStyles.labelLg),
                   const SizedBox(height: 6),
                   ...b.serviceNames.map((name) => Padding(
                     padding: const EdgeInsets.only(bottom: 4),
@@ -398,7 +398,7 @@ class _BookingCardState extends State<_BookingCard> {
                       const Icon(Icons.person_outline,
                           size: 16, color: AppColors.warmGrey),
                       const SizedBox(width: 6),
-                      Text('Stylist: ', style: AppTextStyles.caption),
+                      const Text('Stylist: ', style: AppTextStyles.caption),
                       Text(b.stylistName,
                           style: AppTextStyles.bodyMd),
                     ],
@@ -420,7 +420,7 @@ class _BookingCardState extends State<_BookingCard> {
                   // ── Coupon section (upcoming only) ──────────
                   if (widget.upcoming &&
                       b.status == 'upcoming') ...[
-                    Text('Apply Coupon',
+                    const Text('Apply Coupon',
                         style: AppTextStyles.labelLg),
                     const SizedBox(height: 8),
                     if (_appliedCoupon != null)
@@ -429,10 +429,10 @@ class _BookingCardState extends State<_BookingCard> {
                         padding: const EdgeInsets.symmetric(
                             horizontal: 12, vertical: 10),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.1),
+                          color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
-                              color: AppColors.success.withOpacity(0.3)),
+                              color: AppColors.success.withValues(alpha: 0.3)),
                         ),
                         child: Row(
                           children: [
@@ -534,7 +534,7 @@ class _BookingCardState extends State<_BookingCard> {
                               mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Subtotal',
+                                const Text('Subtotal',
                                     style: AppTextStyles.bodyMd),
                                 Text(
                                     '\$${b.totalPrice.toStringAsFixed(0)}',
@@ -561,7 +561,7 @@ class _BookingCardState extends State<_BookingCard> {
                               mainAxisAlignment:
                               MainAxisAlignment.spaceBetween,
                               children: [
-                                Text('Total',
+                                const Text('Total',
                                     style: AppTextStyles.labelLg),
                                 Text(
                                   '\$${_discountedTotal.toStringAsFixed(0)}',
@@ -594,9 +594,9 @@ class _BookingCardState extends State<_BookingCard> {
                         Expanded(
                           child: OutlinedButton.icon(
                             onPressed: widget.onCancel,
-                            icon: Icon(Icons.cancel_outlined,
+                            icon: const Icon(Icons.cancel_outlined,
                                 size: 16, color: AppColors.error),
-                            label: Text('Cancel',
+                            label: const Text('Cancel',
                                 style: TextStyle(
                                     color: AppColors.error)),
                             style: OutlinedButton.styleFrom(

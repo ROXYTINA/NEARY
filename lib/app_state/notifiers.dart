@@ -1,16 +1,11 @@
 import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 
 import '../app_model/models.dart';
 import '../app_data/api_service.dart';
-import '../app_data/mock_repository.dart';
-import 'api_settings.dart';
 import 'package:flutter/material.dart';
-import '../app_data/api_service.dart';
-
 
 // ============================================================
 // AuthNotifier

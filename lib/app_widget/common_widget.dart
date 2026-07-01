@@ -1,6 +1,3 @@
-import 'package:flutter/material.dart';
-import 'shimmer_widgets.dart';
-
 export 'salon_card.dart';
 export 'service_card.dart';
 export 'promotion_card.dart';
@@ -12,7 +9,3 @@ export 'section_header.dart';
 export 'empty_state.dart';
 export 'time_slot_picker.dart';
 export 'network_image_widgets.dart';
-
-// Shimmer helpers for backwards compatibility
-Widget _shimmerBox(double h) => shimmerBox(h);
-Widget _errorBox(double h) => errorBox(h);

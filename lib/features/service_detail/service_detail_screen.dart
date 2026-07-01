@@ -32,7 +32,6 @@ class _ServiceDetailScreenState extends State<ServiceDetailScreen> {
   List<Review> _reviews = [];
   bool _loading = true;
   bool _hasError = false;
-  bool _isFav = false;
 
   @override
   void initState() {
@@ -442,7 +441,7 @@ class _ServiceBody extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 16),
-              Icon(Icons.star, color: AppColors.goldMid, size: 16),
+              const Icon(Icons.star, color: AppColors.goldMid, size: 16),
               const SizedBox(width: 4),
               Text(
                 '${service.rating} (${reviews.length} reviews)',
@@ -606,7 +605,7 @@ class _ReviewCard extends StatelessWidget {
               CircleAvatar(
                 radius: 18,
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                child: (review.userAvatar == null || review.userAvatar!.isEmpty)
+                child: (review.userAvatar.isEmpty)
                     ? Text(
                   review.userName.isNotEmpty
                       ? review.userName[0].toUpperCase()
@@ -618,7 +617,7 @@ class _ReviewCard extends StatelessWidget {
                 )
                     : ClipOval(
                   child: CachedNetworkImage(
-                    imageUrl: review.userAvatar!,
+                    imageUrl: review.userAvatar,
                     fit: BoxFit.cover,
                     width: 36,
                     height: 36,
@@ -670,10 +669,10 @@ class _ReviewCard extends StatelessWidget {
               ),
             ],
           ),
-          if (review.comment != null && review.comment!.isNotEmpty) ...[
+          if (review.comment.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
-              review.comment!,
+              review.comment,
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
                 fontSize: 14,

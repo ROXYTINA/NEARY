@@ -318,7 +318,7 @@ class AppTheme {
       trackColor:
       WidgetStateProperty.resolveWith((states) =>
       states.contains(WidgetState.selected)
-          ? AppColors.darkRose.withOpacity(0.4)
+          ? AppColors.darkRose.withValues(alpha: 0.4)
           : AppColors.darkCard),
     ),
     drawerTheme: const DrawerThemeData(

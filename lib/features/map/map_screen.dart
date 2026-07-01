@@ -151,7 +151,7 @@ class _MapScreenState extends State<MapScreen> {
                               borderRadius: BorderRadius.circular(20),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(0.18),
+                                  color: Colors.black.withValues(alpha: 0.18),
                                   blurRadius: 8,
                                   offset: const Offset(0, 3),
                                 ),
@@ -217,7 +217,7 @@ class _MapScreenState extends State<MapScreen> {
                       borderRadius: BorderRadius.circular(30),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.12),
+                          color: Colors.black.withValues(alpha: 0.12),
                           blurRadius: 15,
                           offset: const Offset(0, 5),
                         ),
@@ -317,7 +317,7 @@ class _MapScreenState extends State<MapScreen> {
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.12),
+                              color: Colors.black.withValues(alpha: 0.12),
                               blurRadius: 15,
                               offset: const Offset(0, 5),
                             ),
@@ -358,7 +358,7 @@ class _MapScreenState extends State<MapScreen> {
                                     leading: Container(
                                       padding: const EdgeInsets.all(8),
                                       decoration: BoxDecoration(
-                                        color: const Color(0xFFE91E8C).withOpacity(0.1),
+                                        color: const Color(0xFFE91E8C).withValues(alpha: 0.1),
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Icon(
@@ -430,7 +430,7 @@ class _MapScreenState extends State<MapScreen> {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 6,
               offset: const Offset(0, 2),
             ),
@@ -494,10 +494,10 @@ class _MapScreenState extends State<MapScreen> {
                     width: 52,
                     height: 52,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFE91E8C).withOpacity(0.1),
+                      color: const Color(0xFFE91E8C).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(14),
                       border: Border.all(
-                        color: const Color(0xFFE91E8C).withOpacity(0.3),
+                        color: const Color(0xFFE91E8C).withValues(alpha: 0.3),
                         width: 1.5,
                       ),
                     ),
@@ -671,7 +671,7 @@ class _TearDropPainter extends CustomPainter {
 
     // Shadow
     final shadowPaint = Paint()
-      ..color = Colors.black.withOpacity(isSelected ? 0.35 : 0.2)
+      ..color = Colors.black.withValues(alpha: isSelected ? 0.35 : 0.2)
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
 
     final path = _buildPath(size);
@@ -684,7 +684,7 @@ class _TearDropPainter extends CustomPainter {
     canvas.drawCircle(
       Offset(cx, cy),
       size.width * 0.28,
-      Paint()..color = Colors.white.withOpacity(0.2),
+      Paint()..color = Colors.white.withValues(alpha: 0.2),
     );
   }
 

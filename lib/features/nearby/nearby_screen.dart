@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../app_data/mock_repository.dart';
-import '../../app_theme/app_text_styles.dart';
 import '../../app_widget/common_widget.dart';
 
 class NearbyScreen extends StatelessWidget {

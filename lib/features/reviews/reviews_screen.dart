@@ -21,7 +21,7 @@ class ReviewsScreen extends StatelessWidget {
         centerTitle: true,
       ),
       body: reviews.isEmpty
-          ? Center(
+          ? const Center(
               child: Text('No reviews yet.', style: AppTextStyles.bodyLg),
             )
           : ListView.separated(

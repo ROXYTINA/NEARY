@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
+import 'package:salon_beauty_app/app_theme/app_text_styles.dart';
 import '../../app_state/notifiers.dart';
 import '../../app_state/api_settings.dart';
 import '../../app_widget/common_widget.dart';
@@ -52,10 +53,12 @@ class _ChatListScreenState extends State<ChatListScreen> {
       body: chat.isLoading
           ? const Center(child: CircularProgressIndicator())
           : threads.isEmpty
-              ? const Center(
+              ? Center(
                   child: Text(
                     'No active conversations yet.',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+                    style: AppTextStyles.displaySm.copyWith(
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 )
               : RefreshIndicator(

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:provider/provider.dart';
 
 class ApiSettingsNotifier extends ChangeNotifier {
   static const _baseUrlKey = 'api_base_url';
   
   // Default IP for backend (Real backend at /api/)
 
-   String _baseUrl = 'http://10.0.2.2:8000';
+   String _baseUrl = 'https://apisalon.phayuk.com';
 
   String get baseUrl => _baseUrl;
 

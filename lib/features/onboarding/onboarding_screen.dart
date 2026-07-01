@@ -6,7 +6,6 @@ import '../../app_state/notifiers.dart';
 import '../../app_theme/app_text_styles.dart';
 
 import '../../app_theme/app_colors.dart';
-import '../../app_theme/app_text_styles.dart';
 
 
 class OnboardingScreen extends StatefulWidget {
@@ -103,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         Text(
                           _pages[i]['body']!,
                           style: AppTextStyles.bodyMd.copyWith(
-                            color: scheme.onSurface.withOpacity(0.6),
+                            color: scheme.onSurface.withValues(alpha: 0.6),
                           ),
                           textAlign: TextAlign.center,
                         ),
@@ -147,7 +146,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       child: Text(
                         'Skip',
                         style: TextStyle(
-                            color: scheme.onSurface.withOpacity(0.5)),
+                            color: scheme.onSurface.withValues(alpha: 0.5)),
                       ),
                     ),
                     const Spacer(),

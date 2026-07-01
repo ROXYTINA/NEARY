@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 
-import '../../app_data/mock_repository.dart';
 import '../../app_data/api_service.dart';
 import '../../app_model/models.dart';
 import '../../app_state/notifiers.dart';
@@ -392,7 +391,7 @@ class _HomeScreenState extends State<HomeScreen> {
           activeIndex: _carouselIndex,
           count: _bannerImages.length,
           effect: ExpandingDotsEffect(
-            dotColor: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+            dotColor: Theme.of(context).colorScheme.primary.withValues(alpha: 0.3),
             activeDotColor: Theme.of(context).colorScheme.primary,
             dotHeight: 5,
             dotWidth: 5,
@@ -432,7 +431,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: Theme.of(context)
                           .colorScheme
                           .primary
-                          .withOpacity(0.35),
+                          .withValues(alpha: 0.35),
                       blurRadius: 10,
                       offset: const Offset(0, 4),
                     )
@@ -661,9 +660,9 @@ class _ErrorCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.06),
+        color: AppColors.error.withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.error.withOpacity(0.2)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [

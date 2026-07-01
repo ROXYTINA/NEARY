@@ -32,7 +32,7 @@ class StylistCard extends StatelessWidget {
         decoration: BoxDecoration(
 
           color: isSelected
-              ? Theme.of(context).colorScheme.primary.withOpacity(0.08)
+              ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.08)
               : Theme.of(context).cardTheme.color,
 
           borderRadius: BorderRadius.circular(16),
@@ -47,14 +47,14 @@ class StylistCard extends StatelessWidget {
           boxShadow: isSelected
               ? [
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.15),
+              color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.15),
               blurRadius: 8,
               offset: const Offset(0, 4),
             )
           ]
               : [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 4,
               offset: const Offset(0, 2),
             )
@@ -137,7 +137,7 @@ class StylistCard extends StatelessWidget {
                     horizontal: 8, vertical: 3),
 
                 decoration: BoxDecoration(
-                  color: AppColors.goldMid.withOpacity(0.12),
+                  color: AppColors.goldMid.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(20),
                 ),
 
@@ -186,7 +186,7 @@ class StylistCard extends StatelessWidget {
                       decoration: BoxDecoration(
 
                         color: isSelected
-                            ? Theme.of(context).colorScheme.primary.withOpacity(0.12)
+                            ? Theme.of(context).colorScheme.primary.withValues(alpha: 0.12)
                             : Theme.of(context).colorScheme.primaryContainer,
                         borderRadius: BorderRadius.circular(20),
                       ),
